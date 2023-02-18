@@ -2,7 +2,6 @@ from dataclasses import dataclass, field
 import typing
 import datetime
 
-
 """
 representation of a "food", which is an individual unit of a meal. This is a generalized version of specific food items
 for example: if a meal is an in-n-out burger and fries, then both the a general burger and general fries would be food items 
