@@ -6,7 +6,7 @@ from src.recommendation_engine import recommendation_engine
 import typing
 
 # TODO: parse cmd line arguments and set
-RUN_SERVER: bool = False
+RUN_SERVER: bool = True
 
 def main():
     # create a test user
