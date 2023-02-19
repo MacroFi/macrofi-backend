@@ -12,5 +12,5 @@ run main.py from root directory
 
 ## flask endpoints
 
-`/user/{user uuid}` returns user profile data
+`/user/{user uuid}` returns user profile data  
 `/user/meals/{user uuid}` returns user's meal data
