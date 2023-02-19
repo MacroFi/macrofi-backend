@@ -3,12 +3,19 @@
 ## prerequisites
 - requests (`pip install requests`)
 - flask >= 2.0 (`pip install flask`)
+- sklearn (`pip install sklearn`)
+- numpy (`pip install numpy`)
 - python 3.9
 
 ## running
 
 run main.py from root directory
 `python main.py`
+
+arguments
+- `--headless` run in headless mode
+- `--server` run the flask server
+- `--port` specify port for the flask server
 
 ## endpoints
 
