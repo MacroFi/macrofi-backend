@@ -6,6 +6,19 @@ class user_sex_enum:
     MALE = "male"
     FEMALE = "female"
     OTHER = "other"
+    
+class user_goal_enum:
+    # TODO: other goals?
+    WEIGHT_LOSS = "weight_loss"
+
+class user_dietary_restriction_enum:
+    # TODO: other dietary restrictions
+    ALLERGY = "allergy"
+    DISLIKE = "dislike"
+
+"""create a dietary restriction object (just a tuple with the type and a general "payload")"""
+def create_dietary_restriction(type: user_dietary_restriction_enum, payload: str) -> typing.Tuple[user_dietary_restriction_enum, str]:
+    return (type, payload)
 
 @dataclass
 class user_profile_data:
@@ -22,10 +35,10 @@ class user_profile_data:
     _meals: typing.List[meal_definitions.meal_item]
     # sex of the user
     _sex: str 
-    # TODO(Sean) personal goals
-    # _personal_goals: typing.List[]
-    # TODO(Sean) dietary restrictions
-    # _dietary_restrictions: typing.List[]
+    # personal goals (used in recommendation engine)
+    _personal_goals: typing.List[user_goal_enum]
+    # dietary restrictions (used in recommendation engine)
+    _dietary_restrictions: typing.List[typing.Tuple[user_dietary_restriction_enum, str]]
     
     def __str__(self) -> str:
         new_line: str = "\n  "

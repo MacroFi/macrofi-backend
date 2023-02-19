@@ -6,7 +6,16 @@ import typing
 
 def main():
     # create a test user
-    user1 = user_profile_data(_uuid=1234, _weight=170, _height=69, _age=20, _sex=user_sex_enum.MALE, _meals=[])
+    user1 = user_profile_data(
+        _uuid=1234, 
+        _weight=170, 
+        _height=69, 
+        _age=20, 
+        _sex=user_sex_enum.MALE, 
+        _meals=[],
+        _personal_goals=[],
+        _dietary_restrictions=[]
+    )
     print(user1)
     
     # create a test user cache

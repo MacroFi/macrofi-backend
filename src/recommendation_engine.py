@@ -7,6 +7,8 @@ class recommendation_engine:
         # store the reference user we will be providing recommendations for
         self.__user = user
         
+    # TODO(Sean): k-clustering of time eaten of meals to recommend "timely" meals?
+        
     """TODO: where did we get formula?"""
     def calculate_calorie_need(self) -> float:
         # check for programmer error
