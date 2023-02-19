@@ -74,29 +74,24 @@ class yelp_api:
         header: typing.Dict[str, str] = self.__get_auth_header()
         
         # parse query data and add to request
-        query_params: typing.List[str] = []
+        payload: typing.Dict[str, str] = dict()
         
         # term
         if query_data.get("term", None) is not None:
-            query_params.append(f"term={query_data['term']}")
+            payload["term"] = query_data['term']
         # location
         if query_data.get("location", None) is not None:
             loc_data = query_data["location"]
             if type(loc_data) is str:
-                query_params.append(f"location={loc_data}")
+                payload["location"] = loc_data
             elif type(loc_data) is tuple:
-                query_params.append(f"longitude={loc_data[0]}")
-                query_params.append(f"latitude={loc_data[1]}")
+                payload["longitude"] = loc_data[0]
+                payload["latitude"] = loc_data[1]
             else:
                 assert False, "location data must be a string or tuple(int, int))!"
-            
-        # append query params to url
-        if query_params:
-            formatted_url += f"?{'&'.join([param for param in query_params])}"
-        
         
         print(f"[yelp_api]: making business search GET call url='{formatted_url}', header='{header}'")
-        response = requests.get(url=formatted_url, headers=header)
+        response = requests.get(url=formatted_url, headers=header, params=payload)
         if response is None:
             print("[yelp_api]: business search GET call failed!")
         

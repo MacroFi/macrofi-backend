@@ -63,12 +63,13 @@ class usda_nutrient_api:
             assert False, "api key not set!"
         
         url_with_key: str = self.__get_url_formatted("search")
-        get_body = {
-            "query" : f"{food_item_name}"
+        payload = {
+            "query" : f"{food_item_name}",
+            "sortBy" : "dataType.keyword"
         }
         
         print(f"[usda_api]: making SEARCH call to '{url_with_key}'")
-        response = requests.get(url_with_key, json=get_body)
+        response = requests.get(url_with_key, params=payload)
         if not response:
             print("[usda_api]: SEARCH call failed!")
             return

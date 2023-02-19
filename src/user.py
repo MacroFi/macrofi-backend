@@ -42,7 +42,7 @@ class user_profile_data:
     
     def __str__(self) -> str:
         new_line: str = "\n  "
-        return f'''User(uuid={self._uuid}, weight={self._weight} lb, height={self._height} in, age={self._age}, sex={self._sex}):{new_line.join([str(meal) for meal in self._meals])}'''
+        return f'''User(uuid={self._uuid}, weight={self._weight} lb, height={self._height} in, age={self._age}, sex={self._sex}):{new_line if self._meals else ''}{new_line.join([str(meal) for meal in self._meals])}'''
     
     """return the user's body weight in kilograms"""
     def get_body_weight_in_kg(self) -> float:

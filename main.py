@@ -9,10 +9,13 @@ import datetime
 import argparse
 import sys
 
-# TODO: parse cmd line arguments and set
+# ======================
+# command line arguments
+# ======================
 RUN_SERVER: bool = False
 HEADLESS: bool = False
 PORT: int = 5000
+# ======================
 
 def parse_cmd_line_arguments():
     global RUN_SERVER, HEADLESS, PORT
@@ -58,12 +61,14 @@ def main():
     
     # create a usda api wrapper object
     usda_api: usda_nutrient_api = usda_nutrient_api(headless=HEADLESS)
-    #usda_api.search_call("burger")
+    usda_api.search_call("burger")
+    print()
+    usda_api.search_call("fries")
     #usda_api.fetch_call(2353623)
     
     # create a yelp api wrapper object
     yelp: yelp_api = yelp_api(headless=HEADLESS)
-    # yelp.search_for_businesses(query_data={ "term":"delis", "location":"irvine" })
+    #yelp.search_for_businesses(query_data={ "term":"delis", "location":"irvine" })
     
     # test recommendation engine
     user1_recommendation_engine = recommendation_engine(user=user1)
