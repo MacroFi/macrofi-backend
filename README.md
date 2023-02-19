@@ -3,6 +3,8 @@
 ## prerequisites
 - requests (`pip install requests`)
 - flask >= 2.0 (`pip install flask`)
+- sklearn (`pip install sklearn`)
+- numpy (`pip install numpy`)
 - python 3.9
 
 ## running
