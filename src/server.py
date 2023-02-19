@@ -16,7 +16,9 @@ class macrofi_server():
         
         return self.instance
     
+    """initialize the instance"""
     def init(self, in_memory_user_cache: typing.Dict[int, src.user.user_profile_data], threaded: bool = False):
+        # flag for whether we should run in threaded mode or not
         self.__threaded = threaded
         # user data in memory cache
         self.__in_memory_user_cache: typing.Dict[int, src.user.user_profile_data] = in_memory_user_cache
@@ -27,8 +29,9 @@ class macrofi_server():
     def run(self):
         # TODO(Sean): figure out how to run out of debug mode
         flask_app.run(host="0.0.0.0", debug=True, threaded=self.__threaded)
-        
-    def get_user_data(self, uuid: int):
+    
+    """internal method to check user cache and return a response"""
+    def __get_user_data(self, uuid: int):
         
         if type(uuid) is str:
             uuid = int(uuid)
@@ -45,4 +48,4 @@ class macrofi_server():
 """get api call for /user/<uuid> to return user profile data"""
 @flask_app.get("/user/<uuid>")
 def get_user_data(uuid: int):
-    return macrofi_server().get_user_data(uuid=uuid)
+    return macrofi_server().__get_user_data(uuid=uuid)
