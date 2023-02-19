@@ -1,4 +1,9 @@
 import src.user as user
+import typing
+import time
+
+from sklearn.cluster import KMeans
+import numpy as np
 
 """TODO document"""
 class recommendation_engine:
@@ -8,6 +13,23 @@ class recommendation_engine:
         self.__user = user
         
     # TODO(Sean): k-clustering of time eaten of meals to recommend "timely" meals?
+    def kmeans_clustering_on_meals(self, number_of_meals: int = 3):
+        # NOTE(Sean) this is wip
+        
+        # check for programmer error
+        assert self.__user is not None, "user not set!"
+        
+        if not self.__user._meals:
+            print("[recommendation_engine]: cannot perform kmeans clustering with 0 features!")
+            return
+        
+        # converts each time eaten (datatime) to unix time
+        meal_time_data = np.array([time.mktime(meal._time_eaten.timetuple()) for meal in self.__user._meals]).reshape(-1, 1)
+        
+        kmeans = KMeans(n_clusters=number_of_meals).fit(meal_time_data)
+        
+        # TODO recommendations based off clusters
+        print(kmeans.cluster_centers_)
         
     """TODO: where did we get formula?"""
     def calculate_calorie_need(self) -> float:
