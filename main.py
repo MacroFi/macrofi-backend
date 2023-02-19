@@ -1,8 +1,12 @@
 from src.user import user_profile_data, user_sex_enum
 from src.usda_api import usda_nutrient_api
+from src.yelp_api import yelp_api
 from src.server import macrofi_server
 from src.recommendation_engine import recommendation_engine
 import typing
+
+# TODO: parse cmd line arguments and set
+RUN_SERVER: bool = False
 
 def main():
     # create a test user
@@ -26,13 +30,18 @@ def main():
     #usda_api.search_call("burger")
     #usda_api.fetch_call(2353623)
     
+    # create a yelp api wrapper object
+    yelp: yelp_api = yelp_api()
+    # yelp.search_for_businesses(query_data={ "term":"delis", "location":"irvine" })
+    
     # test recommendation engine
     user1_recommendation_engine = recommendation_engine(user=user1)
     print(f"[DEBUG] user_id='{user1._uuid}' calorie recommendation is {user1_recommendation_engine.calculate_calorie_need()}")
     
     # create test flask server
-    server: macrofi_server = macrofi_server().init(in_memory_user_cache=user_cache, threaded=False)
-    server.run()
+    if RUN_SERVER:
+        server: macrofi_server = macrofi_server().init(in_memory_user_cache=user_cache, threaded=False)
+        server.run()
     
 
 if __name__ == "__main__":

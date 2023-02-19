@@ -4,6 +4,7 @@ import requests
 
 class usda_nutrient_api:
     
+    # yeah yeah, plaintext bad
     USDA_API_KEY_FILE = "cs125_usda_api_key.txt"
     USDA_API_URL = "https://api.nal.usda.gov/fdc/v1"
     # token that we will replace with an actual food id when doing fetch
@@ -18,6 +19,7 @@ class usda_nutrient_api:
         # internal list of valid api call types
         self.__api_call_types: typing.List[str] = ["fetch", "search"]
         
+        # TODO(Sean): headless mode 
         # see if there is an api key, either read from file or ask user and store file.
         self.__api_key: typing.Union[str, None] = None
         try:
@@ -25,9 +27,9 @@ class usda_nutrient_api:
                 self.__api_key = f.read().strip()
         # TODO(Sean): propogate error if running in headless mode
         except OSError as err:
-            print(f"looks like there is no '{usda_nutrient_api.USDA_API_KEY_FILE}' file with an api key")
+            print(f"[usda_api]: looks like there is no '{usda_nutrient_api.USDA_API_KEY_FILE}' file with an api key")
             # ask user for key and store in file
-            self.__api_key = input("please enter an api key: ")
+            self.__api_key = input("[usda_api]: please enter an api key: ")
             with open(usda_nutrient_api.USDA_API_KEY_FILE, "w") as f:
                 f.write(self.__api_key)
     
@@ -59,14 +61,17 @@ class usda_nutrient_api:
             "query" : f"{food_item_name}"
         }
         
-        print(f"[DEBUG]: making usda nutrient api SEARCH call to '{url_with_key}'")
+        print(f"[usda_api]: making SEARCH call to '{url_with_key}'")
         response = requests.get(url_with_key, json=get_body)
         if not response:
-            print("api SEARCH call failed!")
+            print("[usda_api]: SEARCH call failed!")
             return
         
         response_json = response.json() 
         print(response_json)
+        
+        # TODO(Sean): parse/process before returning?
+        return response_json
         
     def fetch_call(self, food_id: int):
         # check for programmer error
@@ -75,11 +80,14 @@ class usda_nutrient_api:
         
         url_with_key: str = self.__get_url_formatted("fetch").replace(usda_nutrient_api.USDA_API_FOOD_ID_TOKEN, str(food_id))
         
-        print(f"[DEBUG]: making usda nutrient api FETCH call to '{url_with_key}'")
+        print(f"[usda_api] :making FETCH call to '{url_with_key}'")
         response = requests.get(url_with_key)
         if not response:
-            print("api FETCH call failed!")
+            print("[usda_api]: FETCH call failed!")
             return
             
         response_json = response.json() 
         print(response_json)
+        
+        # TODO(Sean): parse/process before returning?
+        return response_json
