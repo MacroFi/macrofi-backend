@@ -6,11 +6,35 @@ from src.recommendation_engine import recommendation_engine
 from src.meal_definitions import meal_item, food_item
 import typing
 import datetime
+import argparse
+import sys
 
 # TODO: parse cmd line arguments and set
 RUN_SERVER: bool = False
+HEADLESS: bool = False
+PORT: int = 5000
+
+def parse_cmd_line_arguments():
+    global RUN_SERVER, HEADLESS, PORT
+    
+    parser = argparse.ArgumentParser(prog="macrofi-backend")
+    parser.add_argument("--headless", action="store_true")
+    parser.add_argument("--server", action="store_true")
+    parser.add_argument("-port", type=int, action="store")
+    
+    if len(sys.argv) > 1:
+        args = vars(parser.parse_args())
+
+        if args["headless"]:
+            HEADLESS = True
+        if args["server"]:
+            RUN_SERVER = True
+        if args["port"]:
+            PORT = int(args["port"])   
 
 def main():
+    
+    parse_cmd_line_arguments()
     
     # create a test meal
     test_meal1 = meal_item(_meal_name="test meal 1", _food_items=[food_item("test food 1", 500), food_item("test food 2", 450)], _time_eaten=datetime.datetime(2023, 2, 18, 9))
@@ -33,12 +57,12 @@ def main():
     user_cache: typing.Dict[int, user_profile_data] = { user1._uuid : user1  }
     
     # create a usda api wrapper object
-    usda_api: usda_nutrient_api = usda_nutrient_api()
+    usda_api: usda_nutrient_api = usda_nutrient_api(headless=HEADLESS)
     #usda_api.search_call("burger")
     #usda_api.fetch_call(2353623)
     
     # create a yelp api wrapper object
-    yelp: yelp_api = yelp_api()
+    yelp: yelp_api = yelp_api(headless=HEADLESS)
     # yelp.search_for_businesses(query_data={ "term":"delis", "location":"irvine" })
     
     # test recommendation engine
@@ -48,7 +72,7 @@ def main():
     
     # create test flask server
     if RUN_SERVER:
-        server: macrofi_server = macrofi_server().init(in_memory_user_cache=user_cache, threaded=False)
+        server: macrofi_server = macrofi_server().init(in_memory_user_cache=user_cache, headless=HEADLESS, threaded=False, port=PORT)
         server.run()
     
 

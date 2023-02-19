@@ -18,11 +18,15 @@ class macrofi_server():
         return self.instance
     
     """initialize the instance"""
-    def init(self, in_memory_user_cache: typing.Dict[int, src.user.user_profile_data], threaded: bool = False, port: int=5000):
+    def init(self, in_memory_user_cache: typing.Dict[int, src.user.user_profile_data], headless: bool = False, threaded: bool = False, port: int = 5000):
+        # flag for whether the server is running headless
+        self.__headless = headless
         # flag for whether we should run in threaded mode or not
         self.__threaded = threaded
         # port to run the server on
         self.__port = port
+        # ip address to listen on
+        self.__ip = "127.0.0.1"
         # user data in memory cache
         self.__in_memory_user_cache: typing.Dict[int, src.user.user_profile_data] = in_memory_user_cache
         # cache of active user recommendation engines
@@ -32,8 +36,9 @@ class macrofi_server():
     
     """initialize and run the flask server"""
     def run(self):
+        print(f"[macrofi_server]: starting server on {self.__ip}:{self.__port}")
         # TODO(Sean): figure out how to run out of debug mode
-        flask_app.run(host="0.0.0.0", debug=True, threaded=self.__threaded, port=self.__port)
+        flask_app.run(host=self.__ip, debug=True, threaded=self.__threaded, port=self.__port)
     
     """internal method to check user cache and return a response"""
     def __get_user_data(self, uuid: int):

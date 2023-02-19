@@ -14,12 +14,12 @@ class usda_nutrient_api:
     USDA_API_FETCH_ENDPOINT = f"/food/{USDA_API_FOOD_ID_TOKEN}"
     
     
-    def __init__(self):
-        
+    def __init__(self, headless: bool = False):
+        # flag for whether we are running headless
+        self.__headless: bool = headless
         # internal list of valid api call types
         self.__api_call_types: typing.List[str] = ["fetch", "search"]
-        
-        # TODO(Sean): headless mode 
+         
         # see if there is an api key, either read from file or ask user and store file.
         self.__api_key: typing.Union[str, None] = None
         try:
@@ -28,6 +28,12 @@ class usda_nutrient_api:
         # TODO(Sean): propogate error if running in headless mode
         except OSError as err:
             print(f"[usda_api]: looks like there is no '{usda_nutrient_api.USDA_API_KEY_FILE}' file with an api key")
+            
+            # error when running headless
+            if self.__headless:
+                print(f"please create '{usda_nutrient_api.USDA_API_KEY_FILE}' with the api key and place in root directory.")
+                exit(1)
+                
             # ask user for key and store in file
             self.__api_key = input("[usda_api]: please enter an api key: ")
             with open(usda_nutrient_api.USDA_API_KEY_FILE, "w") as f:

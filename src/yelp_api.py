@@ -14,19 +14,24 @@ class yelp_api:
     YELP_API_BUSINESS_DETAILS_ENDPOINT = f"/businesses/{BUSINESS_ID_TOKEN}"
     
     """internal method to get a formatted url for a specific api call"""
-    def __init__(self):
-        # TODO(Sean): headless mode 
-        
+    def __init__(self, headless: bool = False):
+        # flag for whether we are running headless
+        self.__headless: bool = headless
+        # valid options for api call
         self.__api_call_types: typing.List[str] = ["business_search", "business_details"]
-        
         # see if there is an api key, either read from file or ask user and store file.
         self.__api_key: typing.Union[str, None] = None
         try:
             with open(yelp_api.YELP_API_KEY_FILE, "r") as f:
                 self.__api_key = f.read().strip()
-        # TODO(Sean): propogate error if running in headless mode
         except OSError as err:
             print(f"[yelp_api]: looks like there is no '{yelp_api.YELP_API_KEY_FILE}' file with an api key")
+            
+            # error when running headless
+            if self.__headless:
+                print(f"please create '{yelp_api.YELP_API_KEY_FILE}' with the api key and place in root directory.")
+                exit(1)
+            
             # ask user for key and store in file
             self.__api_key = input("[yelp_api]: please enter an api key: ")
             with open(yelp_api.YELP_API_KEY_FILE, "w") as f:
