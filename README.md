@@ -10,7 +10,10 @@
 run main.py from root directory
 `python main.py`
 
-## flask endpoints
+## endpoints
 
 `/user/{user uuid}` returns user profile data  
 `/user/meals/{user uuid}` returns user's meal data
+
+example usage:
+`curl http://127.0.0.1:5000/users/{user uuid}`
