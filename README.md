@@ -12,8 +12,8 @@ run main.py from root directory
 
 ## endpoints
 
-`/user/{user uuid}` returns user profile data  
-`/user/meals/{user uuid}` returns user's meal data
+`/v1/user/{user uuid}` returns user profile data  
+`/v1/user/meals/{user uuid}` returns user's meal data
 
 example usage:
-`curl http://127.0.0.1:5000/users/{user uuid}`
+`curl http://127.0.0.1:5000/v1/users/{user uuid}`
