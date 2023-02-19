@@ -61,6 +61,10 @@ class usda_nutrient_api:
         
         print(f"[DEBUG]: making usda nutrient api SEARCH call to '{url_with_key}'")
         response = requests.get(url_with_key, json=get_body)
+        if not response:
+            print("api SEARCH call failed!")
+            return
+        
         response_json = response.json() 
         print(response_json)
         
@@ -75,6 +79,7 @@ class usda_nutrient_api:
         response = requests.get(url_with_key)
         if not response:
             print("api FETCH call failed!")
+            return
             
         response_json = response.json() 
         print(response_json)
