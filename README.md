@@ -12,6 +12,11 @@
 run main.py from root directory
 `python main.py`
 
+arguments
+- `--headless` run in headless mode
+- `--server` run the flask server
+- `--port` specify port for the flask server
+
 ## endpoints
 
 `/v1/user/{user uuid}` returns user profile data  
