@@ -1,5 +1,7 @@
 import typing
 import requests
+import json
+from collections import defaultdict
 
 """simple wrapper for yelp api calls"""
 class yelp_api:
@@ -61,6 +63,28 @@ class yelp_api:
             assert False, "api key not set!"
             
         return { "Authorization" : f"Bearer {self.__api_key}" }
+    
+    
+    """internal method to parse the json response from the yelp api calls"""
+    def __search_for_businesses_parser(self, response: typing.Dict[str, list]):
+
+        parsed_response = {"businesses" : []}
+        
+        for business in response.get("businesses", ""):
+            parsed_business_info = dict()
+            
+            parsed_business_info["name"]       = business.get("name", "")
+            parsed_business_info["image_url"]  = business.get("image_url", "")
+            parsed_business_info["phone"]      = business.get("phone", "") 
+            parsed_business_info["address"]    = " ".join(business["location"]["display_address"])
+            parsed_business_info["categories"] = [cat["title"] for cat in business.get("categories", [])]
+
+            parsed_response["businesses"].append(parsed_business_info)
+
+        return parsed_response
+
+
+
         
     """
     wrapper for a yelp business search, which will return results based on keywords, category, location, price, etc.
@@ -94,8 +118,6 @@ class yelp_api:
         response = requests.get(url=formatted_url, headers=header, params=payload)
         if response is None:
             print("[yelp_api]: business search GET call failed!")
+            return
         
-        print(response.json())
-        
-        # TODO(Sean): parse/process before returning?
-        return response.json()
+        return self.__search_for_businesses_parser(response.json)
