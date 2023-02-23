@@ -1,10 +1,12 @@
 import flask
 from flask import Flask, jsonify
 import typing
+from src.meal_definitions import meal_item
 import src.user
 import src.recommendation_engine as engine
 from src.yelp_api import yelp_api
 from src.usda_api import usda_nutrient_api
+import datetime
 
 # create flask app at a module level
 flask_app = Flask(__name__) 
@@ -83,7 +85,7 @@ class macrofi_server():
         return self.__active_user_recommendation_engines[uuid]
     
     """internal method to get specific users meal from the cache and return a response"""
-    def __get_user_meal_data(self, uuid: int):
+    def __get_user_meal_data(self, uuid: int, earliest_date: typing.Union[datetime.datetime, None]):
         if type(uuid) is str:
             uuid = int(uuid)
         
@@ -94,7 +96,13 @@ class macrofi_server():
             print(f"[SERVER]: could not find user_id={uuid} in cache!")
             return flask.Response(status=400)
         
-        return jsonify(found_user._meals)
+        meals: typing.List[meal_item] = []
+        if earliest_date is None:
+            meals = found_user._meals
+        else:
+            meals = [meal for meal in found_user._meals if meal._time_eaten >= earliest_date]
+        
+        return jsonify({ "meals":meals })
     
     """internal method to get a specific user's daily calorie need (from the calculation)"""
     def __get_user_calorie_calculation(self, uuid: int):
@@ -154,6 +162,7 @@ class macrofi_server():
         else:
             uuid = int(uuid)
         
+        # parse json
         weight: typing.Union[float, None] = user_data_json.get("weight", None)
         height: typing.Union[int, None] = user_data_json.get("height", None)
         age: typing.Union[int, None] = user_data_json.get("age", None)
@@ -186,7 +195,7 @@ class macrofi_server():
         # check for valid user
         if not self.__is_valid_user(uuid):
             print(f"[SERVER]: could not find user_id={uuid} in cache!")
-            return flask.Response(status=404)
+            return flask.Response(status=400)
 
         # parse json object
         location_str: typing.Union[str, None] = location_json.get("location", None)
@@ -222,10 +231,20 @@ def update_user_data(uuid: int):
         # parse json, check that data is valid, and cache
         return macrofi_server()._macrofi_server__parse_user_data_json_and_cache(user_data_json=flask.request.get_json())
         
-"""get api call for /v1/user/meals/<uuid> to cached meals from the specified user"""
+"""get api call for /v1/user/<uuid>/meals to cached meals from the specified user"""
 @flask_app.get("/v1/user/<uuid>/meals")
 def get_user_meal_data(uuid: int):
     return macrofi_server()._macrofi_server__get_user_meal_data(uuid=uuid)
+
+"""get api call for /v1/user/<uuid>/meals/today to cached meals from the specified user, that were recorded from today's date"""
+@flask_app.get("/v1/user/<uuid>/meals/today")
+def get_user_meal_data(uuid: int):
+    # get today's date at 12:01am
+    today: datetime.datetime = datetime.date.today()
+    today.hour = 0
+    today.minute = 1
+    
+    return macrofi_server()._macrofi_server__get_user_meal_data(uuid=uuid, earliest_date=today)
 
 """get api call for /v1/user/<uuid>/calorie_need"""
 @flask_app.get("/v1/user/<uuid>/calorie_need")
