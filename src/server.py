@@ -238,7 +238,7 @@ def get_user_meal_data(uuid: int):
 
 """get api call for /v1/user/<uuid>/meals/today to cached meals from the specified user, that were recorded from today's date"""
 @flask_app.get("/v1/user/<uuid>/meals/today")
-def get_user_meal_data(uuid: int):
+def get_user_meal_data_today(uuid: int):
     # get today's date at 12:01am
     today: datetime.datetime = datetime.date.today()
     today.hour = 0
