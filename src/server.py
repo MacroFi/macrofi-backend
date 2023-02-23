@@ -3,8 +3,8 @@ from flask import Flask, jsonify
 import typing
 import src.user
 import src.recommendation_engine as engine
-import yelp_api
-import usda_api
+from src.yelp_api import yelp_api
+from src.usda_api import usda_nutrient_api
 
 # create flask app at a module level
 flask_app = Flask(__name__) 
@@ -37,9 +37,9 @@ class macrofi_server():
         # TODO(Sean): read/write to file
         self.__user_location_data_cache: typing.Dict[int, src.user.user_location_data] = {}
         # yelp api wrapper object
-        self.__yelp_api: yelp_api.yelp_api = yelp_api.yelp_api(headless=self.__headless)
+        self.__yelp_api: yelp_api = yelp_api(headless=self.__headless)
         # usda api wrapper object
-        self.__usda_api: usda_api.usda_nutrient_api = usda_api.usda_nutrient_api(headless=self.__headless)
+        self.__usda_api: usda_nutrient_api = usda_nutrient_api(headless=self.__headless)
         
         return self
     
