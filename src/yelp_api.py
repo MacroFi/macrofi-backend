@@ -71,7 +71,7 @@ class yelp_api:
         parsed_response = {"businesses" : []}
         
         for business in response.get("businesses", ""):
-            parsed_business_info = dict()
+            parsed_business_info: typing.Dict[str, str] = {}
             
             parsed_business_info["name"]       = business.get("name", "")
             parsed_business_info["image_url"]  = business.get("image_url", "")
@@ -82,9 +82,6 @@ class yelp_api:
             parsed_response["businesses"].append(parsed_business_info)
 
         return parsed_response
-
-
-
         
     """
     wrapper for a yelp business search, which will return results based on keywords, category, location, price, etc.
@@ -120,4 +117,4 @@ class yelp_api:
             print("[yelp_api]: business search GET call failed!")
             return
         
-        return self.__search_for_businesses_parser(response.json)
+        return self.__search_for_businesses_parser(response.json())

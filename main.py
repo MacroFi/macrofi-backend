@@ -61,13 +61,15 @@ def main():
     
     # create a usda api wrapper object
     usda_api: usda_nutrient_api = usda_nutrient_api(headless=HEADLESS)
-    usda_api.search_call("burger")
-    print()
-    usda_api.search_call("fries")
+    # search for nutritional data using a keyword
+    #usda_api.search_call("burger")
+    #usda_api.search_call("fries")
+    # search for nutritional data by uuid
     #usda_api.fetch_call(2353623)
     
     # create a yelp api wrapper object
     yelp: yelp_api = yelp_api(headless=HEADLESS)
+    # search for nearby restaurants using keyword term and location
     #yelp.search_for_businesses(query_data={ "term":"delis", "location":"irvine" })
     
     # test recommendation engine
