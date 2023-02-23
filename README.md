@@ -23,9 +23,9 @@ arguments
 | -------- | ------ | ----------- |
 | `/v1/user/{uuid}` | GET, POST, PUT |  return or update user profile data |
 | `/v1/user/{uuid}/meals` | GET | return user's meal data |
-| `v1/user/{uuid}/location` | PUT | update user's current location |
-| `v1/user/{uuid}/calorie_need` | GET | return user's daily calorie need |
-| `v1/user/{uuid}/nearby` | GET | return nearby, recommended restaurants for a specific user |
+| `/v1/user/{uuid}/location` | PUT | update user's current location |
+| `/v1/user/{uuid}/calorie_need` | GET | return user's daily calorie need |
+| `/v1/user/{uuid}/nearby` | GET | return nearby, recommended restaurants for a specific user |
 
 example usage:
 `curl http://127.0.0.1:5000/v1/user/{user uuid}`
