@@ -109,9 +109,9 @@ class user_location_data:
         # location as a string keyword
         self.__location: str = location if location is not None else "ERR_NOT_PROVIDED"
         # location using specific longitude
-        self.__longitude: typing.Union[float, None] = longitude
+        self.__longitude: typing.Union[float, None] = float(longitude) if longitude is not None else None
         # location using specific latitude
-        self.__latitude: typing.Union[float, None] = latitude
+        self.__latitude: typing.Union[float, None] = float(latitude) if latitude is not None else None
         # current timestamp for recorded location
         self.__timestamp: datetime.datetime = datetime.datetime.today() if timestamp is None else timestamp
     
