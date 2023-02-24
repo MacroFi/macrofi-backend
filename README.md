@@ -22,7 +22,7 @@ arguments
 | endpoint | method | description |
 | -------- | ------ | ----------- |
 | `/v1/user/{uuid}` | GET, POST, PUT |  return or update user profile data |
-| `/v1/user/{uuid}/meals` | GET | return user's meal data |
+| `/v1/user/{uuid}/meals` | GET, PUT | return all of a user's meal data or update their meals |
 | `/v1/user/{uuid}/meals/today` | GET | return user's meal data from today |
 | `/v1/user/{uuid}/location` | PUT | update user's current location |
 | `/v1/user/{uuid}/calorie/need` | GET | return user's daily calorie need |
