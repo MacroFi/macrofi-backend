@@ -52,7 +52,7 @@ class macrofi_server():
         flask_app.run(host=self.__ip, debug=True, threaded=self.__threaded, port=self.__port)
         
     """helper method to try convert uuid to int, gracefully fails"""
-    def __uuid_as_int(uuid: str) -> typing.Union[int, None]:
+    def __uuid_as_int(self, uuid: str) -> typing.Union[int, None]:
         if type(uuid) is int:
             return uuid
         
@@ -85,13 +85,10 @@ class macrofi_server():
             
         found_user: src.user.user_profile_data = self.__get_user(uuid)
         
-        meals: typing.List[meal_item] = []
         if earliest_date is None:
-            meals = found_user._meals
+            return found_user._meals
         else:
-            meals = [meal for meal in found_user._meals if meal._time_eaten >= earliest_date]
-        
-        return meals
+            return [meal for meal in found_user._meals if meal._time_eaten >= earliest_date]
     
     """internal method to return (or create) a recommendation engine for an active user"""
     def __get_or_create_recommendation_engine(self, uuid: int):
@@ -103,11 +100,10 @@ class macrofi_server():
         
         return self.__active_user_recommendation_engines[uuid]
     
-    """internal methdo to return today's date at 12:01am"""
+    """internal method to return today's date at 12:01am"""
     def __get_today_midnight(self):
         # get today's date at 12:01am
-        today: datetime.datetime = datetime.datetime.today()
-        today.replace(hour=0, minute=1)
+        today: datetime.datetime = datetime.datetime.today().replace(hour=0, minute=0, second=1)
         return today
     
     # ===============================
@@ -144,7 +140,7 @@ class macrofi_server():
         
         return jsonify({ "meals" : self.__get_user_meal_data(uuid=uuid, earliest_date=earliest_date) })
     
-    def __flask_get_user_calorie_today(self, uuid: int):
+    def __flask_get_user_calorie_consumption_today(self, uuid: int):
         uuid = self.__uuid_as_int(uuid=uuid)
         if uuid is None:
             return flask.Response(status=404)
@@ -303,7 +299,8 @@ def get_user_meal_data(uuid: int):
 """get api call for /v1/user/<uuid>/meals/today to cached meals from the specified user, that were recorded from today's date"""
 @flask_app.get("/v1/user/<uuid>/meals/today")
 def get_user_meal_data_today(uuid: int):
-    return macrofi_server()._macrofi_server__flask_get_user_calorie_today(uuid=uuid)
+    today: datetime.datetime = macrofi_server()._macrofi_server__get_today_midnight()
+    return macrofi_server()._macrofi_server__flask_get_user_meal_data(uuid=uuid, earliest_date=today)
 
 """get api call for /v1/user/<uuid>/calorie/need"""
 @flask_app.get("/v1/user/<uuid>/calorie/need")
@@ -312,8 +309,8 @@ def get_user_calorie_calculation(uuid: int):
 
 """get api call for /v1/user/<uuid>/calorie/current"""
 @flask_app.get("/v1/user/<uuid>/calorie/today")
-def get_user_calorie_calculation(uuid: int):
-    return macrofi_server()._macrofi_server__flask_get_user_calorie_calculation(uuid=uuid)
+def get_user_calorie_consumption_today(uuid: int):
+    return macrofi_server()._macrofi_server__flask_get_user_calorie_consumption_today(uuid=uuid)
 
 """get api call for /v1/user/nearby/<uuid>"""
 @flask_app.get("/v1/user/<uuid>/nearby")
@@ -327,3 +324,8 @@ def put_user_location(uuid: int):
         uuid=uuid, 
         location_json=flask.request.get_json()
     )
+    
+"""get api call for /v1/today"""
+@flask_app.get("/v1/today")
+def get_today_midnight():
+    return jsonify(macrofi_server()._macrofi_server__get_today_midnight())
