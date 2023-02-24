@@ -23,10 +23,12 @@ arguments
 | -------- | ------ | ----------- |
 | `/v1/user/{uuid}` | GET, POST, PUT |  return or update user profile data |
 | `/v1/user/{uuid}/meals` | GET | return user's meal data |
-| `/v1/user/{uuid}/meals/today` | GET | return user's meal data from the current day |
+| `/v1/user/{uuid}/meals/today` | GET | return user's meal data from today |
 | `/v1/user/{uuid}/location` | PUT | update user's current location |
-| `/v1/user/{uuid}/calorie_need` | GET | return user's daily calorie need |
+| `/v1/user/{uuid}/calorie/need` | GET | return user's daily calorie need |
+| `/v1/user/{uuid}/calorie/today` | GET | return user's computed calorie consumption for today |
 | `/v1/user/{uuid}/nearby` | GET | return nearby, recommended restaurants for a specific user |
+| `/v1/today` | GET | return the date and time used for "today" |
 
 example usage:
 `curl http://127.0.0.1:5000/v1/user/{user uuid}`
