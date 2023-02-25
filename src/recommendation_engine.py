@@ -26,7 +26,7 @@ class recommendation_engine:
         # converts each time eaten (datatime) to unix time
         meal_time_data = np.array([time.mktime(meal._time_eaten.timetuple()) for meal in self.__user._meals]).reshape(-1, 1)
         
-        kmeans = KMeans(n_clusters=number_of_meals).fit(meal_time_data)
+        kmeans = KMeans(n_clusters=number_of_meals, n_init=10).fit(meal_time_data)
         
         # TODO recommendations based off clusters
         print(kmeans.cluster_centers_)

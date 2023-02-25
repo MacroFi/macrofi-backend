@@ -57,7 +57,7 @@ def main():
         _personal_goals=[],
         _dietary_restrictions=[]
     )
-    print(user1)
+    # print(user1)
     
     # create a test user cache
     user_cache: typing.Dict[int, user_profile_data] = { user1._uuid : user1  }

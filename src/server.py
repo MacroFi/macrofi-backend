@@ -1,5 +1,5 @@
 import flask
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 import typing
 from src.meal_definitions import meal_item
@@ -174,7 +174,7 @@ class macrofi_server():
         return jsonify({ "calorie_need":user_engine.calculate_calorie_need() })
     
     """internal method to get nearby restaurants from yelp api for a specific user"""
-    def __flask_get_nearby_restaurants_for_user(self, uuid: int):
+    def __flask_get_nearby_restaurants_for_user(self, uuid: int, term: str):
         uuid = self.__uuid_as_int(uuid=uuid)
         if uuid is None:
             return flask.Response(status=404)
@@ -205,7 +205,8 @@ class macrofi_server():
             print(f"[SERVER] cached location data '{location_data}' is invalid!")
             return Flask.response(status=404)
         
-        # TODO(Sean): add keyword term to search
+        if term != None:
+            query_data["term"] = term
         
         return self.__yelp_api.search_for_businesses(query_data=query_data)
     
@@ -317,7 +318,8 @@ def get_user_calorie_consumption_today(uuid: int):
 """get api call for /v1/user/nearby/<uuid>"""
 @flask_app.get("/v1/user/<uuid>/nearby")
 def get_nearby_restaurants_for_user(uuid: int):
-    return macrofi_server()._macrofi_server__flask_get_nearby_restaurants_for_user(uuid=uuid)
+    term = request.args.get("term", default=None)
+    return macrofi_server()._macrofi_server__flask_get_nearby_restaurants_for_user(uuid=uuid, term=term)
 
 """put api call for /v1/user/location/<uuid>"""
 @flask_app.put("/v1/user/<uuid>/location")
