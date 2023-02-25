@@ -78,6 +78,7 @@ class yelp_api:
             parsed_business_info["phone"]      = business.get("phone", "") 
             parsed_business_info["address"]    = " ".join(business["location"]["display_address"])
             parsed_business_info["categories"] = [cat["title"] for cat in business.get("categories", [])]
+            parsed_business_info["rating"]     = str(business.get("rating", ""))
 
             parsed_response["businesses"].append(parsed_business_info)
 

@@ -1,5 +1,6 @@
 import flask
 from flask import Flask, jsonify
+from flask_cors import CORS
 import typing
 from src.meal_definitions import meal_item
 import src.user
@@ -10,6 +11,7 @@ import datetime
 
 # create flask app at a module level
 flask_app = Flask(__name__) 
+CORS(flask_app)
 
 # simple singleton wrapper for a REST server, for sole use with the macrofi frontend app
 class macrofi_server():
@@ -37,7 +39,7 @@ class macrofi_server():
         self.__active_user_recommendation_engines: typing.Dict[int, engine.recommendation_engine] = { uuid : engine.recommendation_engine(user) for uuid, user in self.__in_memory_user_cache.items() }
         # cache of user's last posted location, used in the recommendation engine and for yelp's nearby restaurants
         # TODO(Sean): read/write to file
-        self.__user_location_data_cache: typing.Dict[int, src.user.user_location_data] = {}
+        self.__user_location_data_cache: typing.Dict[int, src.user.user_location_data] = {1234: src.user.user_location_data(uuid=1234, location="irvine", longitude=None, latitude=None)}
         # yelp api wrapper object
         self.__yelp_api: yelp_api = yelp_api(headless=self.__headless)
         # usda api wrapper object

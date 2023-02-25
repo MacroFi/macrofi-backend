@@ -1,12 +1,15 @@
 # macrofi-backend
 
 ## prerequisites
-- requests (`pip install requests`)
-- flask >= 2.0 (`pip install flask`)
-- sklearn (`pip install sklearn`)
-- numpy (`pip install numpy`)
-- python 3.9
 
+- python 3.9
+- `pip install -r requirments.txt` 
+    - requests 
+    - flask >= 2.0 
+    - flask-cors
+    - sklearn
+    - numpy
+    
 ## running
 
 run main.py from root directory
