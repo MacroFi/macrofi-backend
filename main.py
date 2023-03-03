@@ -54,8 +54,9 @@ def main():
         _age=20, 
         _sex=user_sex_enum.MALE, 
         _meals=[test_meal1, test_meal2, test_meal3, test_meal4, test_meal5, test_meal6],
-        _personal_goals=[],
-        _dietary_restrictions=[]
+        _personal_goal="",
+        _dietary_restrictions=[],
+        _food_preferences=[]
     )
     # print(user1)
     

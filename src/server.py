@@ -226,15 +226,18 @@ class macrofi_server():
         height: typing.Union[int, None] = user_data_json.get("height", None)
         age: typing.Union[int, None] = user_data_json.get("age", None)
         sex: typing.Union[str, None] = user_data_json.get("sex", None)
-        
-        # TODO(Sean): parse meals, goals, and preferences
+        goal: typing.Union[str, None] = user_data_json.get("goal", None) 
+        dietary_restrictions: typing.Union[list[str], None] = user_data_json.get("dietary_restrictions", None)
+        food_preferences: typing.Union[list[str], None] = user_data_json.get("food_preferences", None)
         
         if not self.__is_valid_user(uuid=uuid):
             # create new user
+            print(f"[SERVER] creating new user uuid={uuid}!")
             new_user: src.user.user_profile_data = src.user.try_create_user_profile_data(int(uuid), float(weight), int(height), int(age), sex)
             self.__in_memory_user_cache[uuid] = new_user
         else:
             # update user profile data
+            print(f"[SERVER] Updating profile data of user uuid={uuid}!")
             if weight is not None:
                 self.__in_memory_user_cache[uuid]._weight = float(weight)
                 
@@ -246,6 +249,16 @@ class macrofi_server():
                 
             if sex is not None:
                 self.__in_memory_user_cache[uuid]._sex = sex
+            
+            if goal is not None:
+                self.__in_memory_user_cache[uuid]._personal_goal = goal
+            
+            if dietary_restrictions is not None:
+                self.__in_memory_user_cache[uuid]._dietary_restrictions = dietary_restrictions
+            
+            if food_preferences is not None:
+                self.__in_memory_user_cache[uuid]._food_preferences = food_preferences
+
                 
         return flask.Response(status=200)
     

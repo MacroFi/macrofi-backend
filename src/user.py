@@ -56,9 +56,11 @@ class user_profile_data:
     # sex of the user
     _sex: str 
     # personal goals (used in recommendation engine)
-    _personal_goals: typing.List[user_goal_enum]
+    _personal_goal: user_goal_enum
     # dietary restrictions (used in recommendation engine)
-    _dietary_restrictions: typing.List[typing.Tuple[user_dietary_restriction_enum, str]]
+    _dietary_restrictions: typing.List[user_dietary_restriction_enum]
+
+    _food_preferences: typing.List[user_preferences_enum]
         
     def __str__(self) -> str:
         new_line: str = "\n  "
