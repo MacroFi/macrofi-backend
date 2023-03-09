@@ -65,7 +65,8 @@ class usda_nutrient_api:
         url_with_key: str = self.__get_url_formatted("search")
         payload = {
             "query" : f"{food_item_name}",
-            "sortBy" : "dataType.keyword"
+            "sortBy" : "dataType.keyword",
+            "pageSize" : "1"
         }
         
         print(f"[usda_api]: making SEARCH call to '{url_with_key}'")
@@ -74,11 +75,23 @@ class usda_nutrient_api:
             print("[usda_api]: SEARCH call failed!")
             return
         
-        response_json = response.json() 
-        print(response_json)
-        
-        # TODO(Sean): parse/process before returning?
-        return response_json
+        response_json = response.json()
+        nutrients = {}
+        TRACKED_NUITRIENTS = {
+            "Energy" : "calories",
+            "Protein" : "protein", 
+            "Total lipid (fat)" : "fat", 
+            "Carbohydrate, by difference": "carbohydrates", 
+            "Sugars, total including NLEA" : "sugar"
+        }
+        if len(response_json["foods"]) > 0:
+            foodNutrients = response_json["foods"][0]["foodNutrients"]
+
+            for foodNutrient in foodNutrients:
+                if foodNutrient["nutrientName"] in TRACKED_NUITRIENTS:
+                    nutrients[TRACKED_NUITRIENTS[foodNutrient["nutrientName"]]] = foodNutrient["value"]
+
+        return nutrients
         
     def fetch_call(self, food_id: int):
         # check for programmer error

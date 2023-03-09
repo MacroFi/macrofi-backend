@@ -297,6 +297,17 @@ class macrofi_server():
         print(f"[SERVER] stored {str(location_data)}")
         
         return flask.Response(status=200)
+    
+
+    def __flask_get_meal_data(self, meal: list[str]):
+        print(f"[SERVER]: received POST __flask_get_meal_data(meal={meal})")
+
+        meal_data = {}
+        for food_item in meal:
+            nutrients = self.__usda_api.search_call(food_item)
+            meal_data[food_item] = nutrients
+
+        return jsonify(meal_data)
   
 """get, put, post api call for /v1/user/<uuid>"""
 @flask_app.route("/v1/user/<uuid>", methods=["GET", "PUT", "POST"])
@@ -346,3 +357,9 @@ def put_user_location(uuid: int):
 @flask_app.get("/v1/today")
 def get_today_midnight():
     return jsonify(macrofi_server()._macrofi_server__get_today_midnight())
+
+"""get api call for /v1/meal_nutrients"""
+@flask_app.get("/v1/meal_nutrients")
+def get_meal_nutrients():
+    meal = request.args.get("meal", default="").split(",")
+    return macrofi_server()._macrofi_server__flask_get_meal_data(meal=meal)

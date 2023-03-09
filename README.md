@@ -32,6 +32,7 @@ arguments
 | `/v1/user/{uuid}/calorie/today` | GET | return user's computed calorie consumption for today |
 | `/v1/user/{uuid}/nearby` | GET | return nearby, recommended restaurants for a specific user |
 | `/v1/today` | GET | return the date and time used for "today" |
+| `/v1/meal_nutrients` | GET | return the nutrient data for each food item in meal |
 
 example usage:
 `curl http://127.0.0.1:5000/v1/user/{user uuid}`
