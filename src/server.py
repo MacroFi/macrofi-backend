@@ -172,6 +172,7 @@ class macrofi_server():
     def __add_meal_to_user(self, uuid: int, meal: meal_item) -> None:
         assert self.__is_valid_user(uuid), "user is not valid?"
         self.__in_memory_user_cache[uuid]._meals.append(meal)
+        self.__serialize_user_profiles_to_file(macrofi_server.DEFAULT_USER_PROFILE_FILE_NAME)
     
     # ===============================
     # flask endpoint helper functions
