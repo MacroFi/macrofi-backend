@@ -377,7 +377,7 @@ class macrofi_server():
     
     """
     internal method to cache a specific user's meal data
-    json should be in the form { "meal_name":str (optional) "foods": list[str] (food item keywords), "time_eaten": datetime (format: %Y-%m-%d %H:%M:%S) }
+    json should be in the form { "meal_name":str (optional) "food_items": list[str] (food item keywords), "time_eaten": datetime (format: %Y-%m-%d %H:%M:%S) }
     """
     def __flask_put_user_meal_data(self, uuid: str, meal_data_json):
         print("fuck you?")
