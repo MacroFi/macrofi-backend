@@ -2,6 +2,8 @@ import os
 import typing
 import requests
 
+import src.meal_definitions as meal_definitions
+
 class usda_nutrient_api:
     
     # yeah yeah, plaintext bad
@@ -12,6 +14,14 @@ class usda_nutrient_api:
     # specific endpoints
     USDA_API_SEARCH_ENDPOINT = "/foods/search"
     USDA_API_FETCH_ENDPOINT = f"/food/{USDA_API_FOOD_ID_TOKEN}"
+    
+    TRACKED_NUTRIENTS = {
+        "Energy" : "calories",
+        "Protein" : "protein", 
+        "Total lipid (fat)" : "fat", 
+        "Carbohydrate, by difference": "carbohydrates", 
+        "Sugars, total including NLEA" : "sugar"
+    }
     
     
     def __init__(self, headless: bool = False):
@@ -62,6 +72,7 @@ class usda_nutrient_api:
         if self.__api_key is None:
             assert False, "api key not set!"
         
+        # create request and payload
         url_with_key: str = self.__get_url_formatted("search")
         payload = {
             "query" : f"{food_item_name}",
@@ -77,21 +88,22 @@ class usda_nutrient_api:
         
         response_json = response.json()
         nutrients = {}
-        TRACKED_NUITRIENTS = {
-            "Energy" : "calories",
-            "Protein" : "protein", 
-            "Total lipid (fat)" : "fat", 
-            "Carbohydrate, by difference": "carbohydrates", 
-            "Sugars, total including NLEA" : "sugar"
-        }
         if len(response_json["foods"]) > 0:
             foodNutrients = response_json["foods"][0]["foodNutrients"]
 
             for foodNutrient in foodNutrients:
-                if foodNutrient["nutrientName"] in TRACKED_NUITRIENTS:
-                    nutrients[TRACKED_NUITRIENTS[foodNutrient["nutrientName"]]] = foodNutrient["value"]
+                if foodNutrient["nutrientName"] in usda_nutrient_api.TRACKED_NUTRIENTS:
+                    nutrients[usda_nutrient_api.TRACKED_NUTRIENTS[foodNutrient["nutrientName"]]] = foodNutrient["value"]
 
         return nutrients
+    
+    """helper function to search the USDA API for a food based on keyword, and return the best (currently first) result as a `food_item`"""
+    def search_call_best_as_food_item(self, food_item_name: str):
+        
+        nutrients = self.search_call(food_item_name)
+        calories = nutrients["calories"]
+             
+        return meal_definitions.food_item(_food_name=food_item_name, _calories=calories, _nutrient_data=nutrients)
         
     def fetch_call(self, food_id: int):
         # check for programmer error

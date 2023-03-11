@@ -2,7 +2,7 @@ import flask
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import typing
-from src.meal_definitions import meal_item
+from src.meal_definitions import meal_item, food_item
 import src.user
 import src.recommendation_engine as engine
 from src.yelp_api import yelp_api
@@ -167,6 +167,11 @@ class macrofi_server():
         # get today's date at 12:01am
         today: datetime.datetime = datetime.datetime.today().replace(hour=0, minute=0, second=1)
         return today
+    
+    """internal method to add a meal to a specific user"""
+    def __add_meal_to_user(self, uuid: int, meal: meal_item) -> None:
+        assert self.__is_valid_user(uuid), "user is not valid?"
+        self.__in_memory_user_cache[uuid]._meals.append(meal)
     
     # ===============================
     # flask endpoint helper functions
@@ -368,6 +373,58 @@ class macrofi_server():
             meal_data[food_item] = nutrients
 
         return jsonify(meal_data)
+    
+    """
+    internal method to cache a specific user's meal data
+    json should be in the form { "meal_name":str (optional) "foods": list[str] (food item keywords), "time_eaten": datetime (format: %Y-%m-%d %H:%M:%S) }
+    """
+    def __flask_put_user_meal_data(self, uuid: str, meal_data_json):
+        print("fuck you?")
+        uuid = self.__uuid_as_int(uuid=uuid)
+        if uuid is None:
+            print("[SERVER] __flask_put_user_meal_data uuid is None!")
+            return flask.Response(status=404)
+        
+        if not self.__is_valid_user(uuid):
+            print("[SERVER] __flask_put_user_meal_data uuid is not valid (not found in user cache)!")
+            return flask.Response(status=400)
+
+        # parse meal name
+        meal_name: typing.Union[str, None] = meal_data_json.get("meal_name", None)
+        meal_name = "DEFAULT_MEAL_NAME"
+        
+        # parse time eaten
+        time_eaten_str: typing.Union[str, None] = meal_data_json.get("time_eaten", None)
+        if time_eaten_str is None:
+            print("[SERVER] __flask_put_user_meal_data time_eaten is not found!")
+            return flask.Response(status=400)
+        time_eaten = datetime.datetime.strptime(time_eaten_str, "%Y-%m-%d %H:%M:%S")
+        # check there are food items
+        if meal_data_json.get("food_items", None) is None:
+            print("[SERVER] __flask_put_user_meal_data food_items is not found!")
+            return flask.Response(status=400)
+        
+        food_item_keywords: typing.List[str] = [keyword for keyword in meal_data_json["food_items"]]
+        if not food_item_keywords:
+            print("[SERVER] __flask_put_user_meal_data() food_items is empty!")
+            return flask.Response(status=400)
+        
+        foods: typing.List[food_item] = []
+        for keyword in food_item_keywords:
+            food: food_item = self.__usda_api.search_call_best_as_food_item(keyword)
+            assert type(food) is food_item, "bad return from api wrapper"
+            foods.append(food)
+        
+        # create meal
+        new_meal: meal_item = meal_item(_meal_name=meal_name, _food_items=foods, _time_eaten=time_eaten)
+        
+        print(f"[SERVER] PUT /v1/user/{uuid}/meals with payload='{meal_data_json}' created meal_item='{str(new_meal)}'")
+        
+        # add to user cache
+        self.__add_meal_to_user(uuid, new_meal)
+            
+        return flask.Response(status=200)
+        
   
 """get, put, post api call for /v1/user/<uuid>"""
 @flask_app.route("/v1/user/<uuid>", methods=["GET", "PUT", "POST"])
@@ -378,10 +435,13 @@ def update_user_data(uuid: int):
         # parse json, check that data is valid, and cache
         return macrofi_server()._macrofi_server__flask_parse_user_data_json_and_cache(user_data_json=flask.request.get_json())
         
-"""get api call for /v1/user/<uuid>/meals to cached meals from the specified user"""
-@flask_app.get("/v1/user/<uuid>/meals")
+"""get, put api call for /v1/user/<uuid>/meals to cached meals from the specified user"""
+@flask_app.route("/v1/user/<uuid>/meals", methods=["GET", "PUT"])
 def get_user_meal_data(uuid: int):
-    return macrofi_server()._macrofi_server__flask_get_user_meal_data(uuid=uuid)
+    if flask.request.method == "GET":
+        return macrofi_server()._macrofi_server__flask_get_user_meal_data(uuid=uuid)
+    elif flask.request.method == "PUT":
+        return macrofi_server()._macrofi_server__flask_put_user_meal_data(uuid=uuid, meal_data_json=flask.request.get_json())
 
 """get api call for /v1/user/<uuid>/meals/today to cached meals from the specified user, that were recorded from today's date"""
 @flask_app.get("/v1/user/<uuid>/meals/today")
@@ -394,18 +454,18 @@ def get_user_meal_data_today(uuid: int):
 def get_user_calorie_calculation(uuid: int):
     return macrofi_server()._macrofi_server__flask_get_user_calorie_calculation(uuid=uuid)
 
-"""get api call for /v1/user/<uuid>/calorie/current"""
+"""get api call for /v1/user/<uuid>/calorie/today"""
 @flask_app.get("/v1/user/<uuid>/calorie/today")
 def get_user_calorie_consumption_today(uuid: int):
     return macrofi_server()._macrofi_server__flask_get_user_calorie_consumption_today(uuid=uuid)
 
-"""get api call for /v1/user/nearby/<uuid>"""
+"""get api call for /v1/user/<uuid>/nearby"""
 @flask_app.get("/v1/user/<uuid>/nearby")
 def get_nearby_restaurants_for_user(uuid: int):
     term = request.args.get("term", default=None)
     return macrofi_server()._macrofi_server__flask_get_nearby_restaurants_for_user(uuid=uuid, term=term)
 
-"""put api call for /v1/user/location/<uuid>"""
+"""put api call for /v1/user/<uuid>/location"""
 @flask_app.put("/v1/user/<uuid>/location")
 def put_user_location(uuid: int):
     return macrofi_server()._macrofi_server__flask_put_user_location(
