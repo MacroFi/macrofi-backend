@@ -74,6 +74,125 @@ class user_profile_data:
     def get_height_in_cm(self) -> float:
         return self._height * 2.54
     
+    """return this object as json"""
+    def to_json(self):
+        as_json = dict()
+        # serialize data
+        as_json["uuid"] = str(self._uuid)
+        as_json["weight"] = str(self._weight)
+        as_json["height"] = str(self._height)
+        as_json["age"] = str(self._age)
+        as_json["meals"] = [meal.to_json() for meal in self._meals]
+        as_json["sex"] = str(self._sex)
+        as_json["food_preferences"] = self._food_preferences
+        as_json["dietary_restrictions"] = self._dietary_restrictions
+        as_json["personal_goals"] = self._personal_goal
+        
+        return as_json
+    
+    @staticmethod
+    def from_json(json_data):
+        # NOTE(Sean) this is not very beautiful code, but fine for an mvp
+        # NOTE(Sean) after writing all the serializing code, I just realized that we could probably just use __dict__...
+        
+        # get uuid
+        uuid: typing.Union[int, None] = None
+        if json_data.get("uuid", None) is None:
+            print("[SERVER]: failed to find uuid, which is necessary to construct a user.")
+            assert False, "failed to find uuid"
+        try:
+            uuid = int(json_data["uuid"])
+        except:
+            print(f"[SERVER]: uuid '{uuid}' does not seem to be an integer")
+            assert False, "failed to format uuid"
+        
+        # get weight data
+        weight: typing.Union[float, None] = None
+        if json_data.get("weight", None) is None:
+            print("[SERVER]: failed to find uuid, which is necessary to construct a user.")
+            assert False, "failed to find uuid"
+        try:
+            weight = float(json_data["weight"])
+        except:
+            print(f"[SERVER]: weight '{weight}' does not seem to be an float")
+            assert False, "failed to format weight"
+            
+        # get height data
+        height: typing.Union[int, None] = None
+        if json_data.get("height", None) is None:
+            print("[SERVER]: failed to find height, which is necessary to construct a user.")
+            assert False, "failed to find height"
+        try:
+            height = int(json_data["height"])
+        except:
+            print(f"[SERVER]: height '{height}' does not seem to be an int")
+            assert False, "failed to format height"
+            
+        # get age data
+        age: typing.Union[int, None] = None
+        if json_data.get("age", None) is None:
+            print("[SERVER]: failed to find age, which is necessary to construct a user.")
+            assert False, "failed to find age"
+        try:
+            age = int(json_data["age"])
+        except:
+            print(f"[SERVER]: age '{age}' does not seem to be an int")
+            assert False, "failed to format age"
+            
+        # get sex data
+        sex: typing.Union[str, None] = None
+        if json_data.get("sex", None) is None:
+            print("[SERVER]: failed to find sex, which is necessary to construct a user.")
+            assert False, "failed to find sex"
+        sex = json_data["sex"]
+            
+        # get meal data
+        if json_data.get("meals", None) is None:
+            print("[SERVER]: failed to find meals, which is necessary to construct a user.")
+            assert False, "failed to find meals"
+        
+        meal_list_json = json_data["meals"]
+        meal_data = [meal_definitions.meal_item.from_json(meal) for meal in meal_list_json]
+            
+        # get food preference data
+        if json_data.get("food_preferences", None) is None:
+            print("[SERVER]: failed to find food_preferences, which is necessary to construct a user.")
+            assert False, "failed to find food_preferences"
+        
+        food_preferences = [pref for pref in json_data["food_preferences"]]
+        
+        # get dietary restriction data
+        if json_data.get("dietary_restrictions", None) is None:
+            print("[SERVER]: failed to find dietary_restrictions, which is necessary to construct a user.")
+            assert False, "failed to find dietary_restrictions"
+        
+        dietary_restrictions = [restr for restr in json_data["dietary_restrictions"]]
+        
+        # get personal goal data
+        if json_data.get("personal_goals", None) is None:
+            print("[SERVER]: failed to find personal_goals, which is necessary to construct a user.")
+            assert False, "failed to find personal_goals"
+        
+        personal_goals = [goal for goal in json_data["personal_goals"]]
+        
+        user = user_profile_data(
+            _uuid=uuid,
+            _weight=weight,
+            _height=height,
+            _age=age,
+            _meals=meal_data,
+            _sex=sex,
+            _personal_goal=personal_goals,
+            _dietary_restrictions=dietary_restrictions,
+            _food_preferences=food_preferences
+        )
+        
+        return user
+        
+        
+            
+        
+    
 """helper method to try create a user_profile_data object"""
 def try_create_user_profile_data(
         uuid: int, weight: 

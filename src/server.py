@@ -8,6 +8,9 @@ import src.recommendation_engine as engine
 from src.yelp_api import yelp_api
 from src.usda_api import usda_nutrient_api
 import datetime
+import json
+import threading
+import time
 
 # create flask app at a module level
 flask_app = Flask(__name__) 
@@ -15,6 +18,8 @@ CORS(flask_app)
 
 # simple singleton wrapper for a REST server, for sole use with the macrofi frontend app
 class macrofi_server():
+    
+    DEFAULT_USER_PROFILE_FILE_NAME = "user_profile_data_cache.json"
     
     """singleton new constructor"""
     def __new__(self):
@@ -44,14 +49,38 @@ class macrofi_server():
         self.__yelp_api: yelp_api = yelp_api(headless=self.__headless)
         # usda api wrapper object
         self.__usda_api: usda_nutrient_api = usda_nutrient_api(headless=self.__headless)
+        # thread which periodically saves the user profile cache
+        self.__user_profile_serialize_thread: typing.Union[threading.Thread, None] = None
+        
+        # save to cache instantly if the user profile dictionary is pre-populated
+        if self.__in_memory_user_cache:
+            self.__serialize_user_profiles_to_file(macrofi_server.DEFAULT_USER_PROFILE_FILE_NAME)
+        
+        # try loading serialized user profile data
+        self.__deserialize_user_profiles_from_file(macrofi_server.DEFAULT_USER_PROFILE_FILE_NAME)
         
         return self
     
     """initialize and run the flask server"""
     def run(self):
         print(f"[macrofi_server]: starting server on {self.__ip}:{self.__port}")
+        # initialize a thread to periodically save our user profile cache
+        self.__user_profile_serialize_thread = threading.Thread(target=self.__periodically_save_user_profile_cache_to_file)
+        self.__user_profile_serialize_thread.daemon = True # so ctrl+c kills the thread
+        self.__user_profile_serialize_thread.start()
+        
         # TODO(Sean): figure out how to run out of debug mode
         flask_app.run(host=self.__ip, debug=True, threaded=self.__threaded, port=self.__port)
+        
+    """quit the flask server, and save any relevant data that is still in memory"""
+    def quit(self):
+        
+        # stop any running threads
+        if self.__user_profile_serialize_thread is not None:
+            self.__user_profile_serialize_thread.join()
+            
+        # cache user profile data
+        self.__serialize_user_profiles_to_file(macrofi_server.DEFAULT_USER_PROFILE_FILE_NAME)
         
     """helper method to try convert uuid to int, gracefully fails"""
     def __uuid_as_int(self, uuid: str) -> typing.Union[int, None]:
@@ -76,6 +105,37 @@ class macrofi_server():
             uuid = int(uuid)
         
         return self.__in_memory_user_cache.get(uuid, None)
+    
+    """internal method to serialize the in-memory user profiles to a file"""
+    def __serialize_user_profiles_to_file(self, filename: typing.Union[str, None] = None) -> None:
+        save_file_name: str = macrofi_server.DEFAULT_USER_PROFILE_FILE_NAME if filename is None else filename
+        print(f"[SERVER] serializing user profile data to '{save_file_name}'...")
+        """open a file in write mode (will overwrite existing file), and dump the user profile cache as json"""
+        with open(save_file_name, "w") as f:
+            jsonified: typing.Dict[str, typing.Dict[str, str]] = { key:user.to_json() for key,user in self.__in_memory_user_cache.items() }
+            json.dump(jsonified, f)
+        print(f"[SERVER] finished caching data.")
+        
+    """internal method to periodically save the user profile cache to a file"""
+    def __periodically_save_user_profile_cache_to_file(self, wait_time: float = 300):
+        # NOTE(Sean) this is not the "best" approach, but it works for an mvp
+        time.sleep(wait_time)
+        print("[SERVER] save user profile thread woke up!")
+        # NOTE(Sean) due to python's GIL, we do not need any concurrent read/write protection
+        self.__serialize_user_profiles_to_file(macrofi_server.DEFAULT_USER_PROFILE_FILE_NAME)
+
+    """internal method to deserialize user profile cache from json file."""
+    def __deserialize_user_profiles_from_file(self, filename: typing.Union[str, None] = None) -> None:
+        save_file_name: str = macrofi_server.DEFAULT_USER_PROFILE_FILE_NAME if filename is None else filename
+        """open a file in write mode (will overwrite existing file), and dump the user profile cache as json"""
+        try:
+            with open(save_file_name, "r") as f:
+                deserialized_cache_json = json.load(f)
+                deserialized_cache = { int(key) : src.user.user_profile_data.from_json(value) for key,value in deserialized_cache_json.items() }
+                # set in memory user cache
+                self.__in_memory_user_cache = deserialized_cache
+        except OSError:
+            print(f"[SERVER]: failed to find {save_file_name}.")
     
     """internal method to get meal data from a user, potentially specifying an earliest date for recorded meals"""
     def __get_user_meal_data(self, uuid: int, earliest_date: typing.Union[datetime.datetime, None] = None):
@@ -299,7 +359,7 @@ class macrofi_server():
         return flask.Response(status=200)
     
 
-    def __flask_get_meal_data(self, meal: list[str]):
+    def __flask_get_meal_data(self, meal: typing.List[str]):
         print(f"[SERVER]: received POST __flask_get_meal_data(meal={meal})")
 
         meal_data = {}
