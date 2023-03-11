@@ -377,7 +377,7 @@ class macrofi_server():
     
     """
     internal method to cache a specific user's meal data
-    json should be in the form { "meal_name":str (optional) "food_items": list[str] (food item keywords), "time_eaten": datetime (format: %Y-%m-%d %H:%M:%S) }
+    json should be in the form { "meal_name":str (optional) "food_items": list[str] (food item keywords), "time_eaten": datetime (format: %Y-%m-%d %H:%M:%S) (optional) }
     """
     def __flask_put_user_meal_data(self, uuid: str, meal_data_json):
         print("fuck you?")
@@ -396,10 +396,11 @@ class macrofi_server():
         
         # parse time eaten
         time_eaten_str: typing.Union[str, None] = meal_data_json.get("time_eaten", None)
-        if time_eaten_str is None:
-            print("[SERVER] __flask_put_user_meal_data time_eaten is not found!")
-            return flask.Response(status=400)
-        time_eaten = datetime.datetime.strptime(time_eaten_str, "%Y-%m-%d %H:%M:%S")
+        time_eaten: typing.Union[datetime.datetime, None] = None
+        if time_eaten_str is not None:
+            time_eaten = datetime.datetime.strptime(time_eaten_str, "%Y-%m-%d %H:%M:%S")
+        else:
+            time_eaten = datetime.datetime.now()
         # check there are food items
         if meal_data_json.get("food_items", None) is None:
             print("[SERVER] __flask_put_user_meal_data food_items is not found!")
