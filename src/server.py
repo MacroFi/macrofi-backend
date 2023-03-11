@@ -299,7 +299,7 @@ class macrofi_server():
         return flask.Response(status=200)
     
 
-    def __flask_get_meal_data(self, meal: list[str]):
+    def __flask_get_meal_data(self, meal: typing.List[str]):
         print(f"[SERVER]: received POST __flask_get_meal_data(meal={meal})")
 
         meal_data = {}
