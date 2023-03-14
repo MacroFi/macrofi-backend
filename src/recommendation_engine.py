@@ -31,7 +31,8 @@ class recommendation_engine:
         # TODO recommendations based off clusters
         print(kmeans.cluster_centers_)
         
-    """TODO: where did we get formula?"""
+    # https://github.com/prosif/Harris-Benedict-Tool/blob/master/hbe.py  NOT USING
+    """FORMULA: HARRIS-BENEDICT FORMULA"""
     def calculate_calorie_need(self) -> float:
         # check for programmer error
         assert self.__user is not None, "user not set!"
@@ -55,8 +56,21 @@ class recommendation_engine:
             height_factor = 1.9
             age_factor = 4.7
         else:
-            # TODO: what factors should we use for people who specific sex="OTHER"
-            assert False, "not implemented"
+            # TODO: what factors should we use for people who specific sex="OTHER" 
+            # Might not be ethical/moral, but defaulting to Female
+            starting_point = 65.51
+            weight_factor = 9.6
+            height_factor = 1.9
+            age_factor = 4.7
+
+        if self.__user._personal_goal == user.user_goal_enum.WEIGHT_LOSS:
+            physical_activity_factor = 0.9
+        if self.__user._personal_goal == user.user_goal_enum.WEIGHT_GAIN:
+            physical_activity_factor = 1.1
+        if self.__user._personal_goal == user.user_goal_enum.BULK:
+            physical_activity_factor = 1.2
+        if self.__user._personal_goal == user.user_goal_enum.LEAN:
+            physical_activity_factor = 1.1
         
         # compute
         weight = (weight_factor * self.__user.get_body_weight_in_kg())
@@ -64,3 +78,25 @@ class recommendation_engine:
         numerator = starting_point + weight + height 
         # TODO(Sean): add physical activity factor...
         return (numerator / (age_factor * self.__user._age)) * physical_activity_factor * 100
+    
+    """
+    Carbs: 45-65% of Calories
+    Protein: 10-35% of Calories
+    Fat: 20-35% of Calories
+    """
+    def calculate_macronutrients(self) -> list:
+        # check for programmer error
+        assert self.__user is not None, "user not set!"
+
+        calories = self.calculate_calorie_need()
+        # starting factors
+        carbfactor: float = 0.55
+        proteinfactor: float = 0.20
+        fatfactor: float = 0.30
+        
+        carbs = calories*carbfactor
+        protein = calories*proteinfactor
+        fat = calories*fatfactor        
+        # compute
+        macros = [carbs, protein, fat]
+        return macros
