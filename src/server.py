@@ -113,7 +113,7 @@ class macrofi_server():
         """open a file in write mode (will overwrite existing file), and dump the user profile cache as json"""
         with open(save_file_name, "w") as f:
             jsonified: typing.Dict[str, typing.Dict[str, str]] = { key:user.to_json() for key,user in self.__in_memory_user_cache.items() }
-            json.dump(jsonified, f)
+            json.dump(jsonified, f, indent=4)
         print(f"[SERVER] finished caching data.")
         
     """internal method to periodically save the user profile cache to a file"""

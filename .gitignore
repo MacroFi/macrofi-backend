@@ -1,6 +1,5 @@
 cs125_usda_api_key.txt
 cs125_yelp_api_key.txt
-user_profile_data_cache.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
