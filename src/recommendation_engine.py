@@ -5,6 +5,8 @@ import src.yelp_api
 
 from sklearn.cluster import KMeans
 import numpy as np
+import src.meal_definitions
+import src.usda_api
 
 """TODO document"""
 class recommendation_engine:
@@ -138,9 +140,21 @@ class recommendation_engine:
         return np.array([])
 
     """internal helper function to retrieve menu items based on reference business data and menu item cache"""
-    def __get_menu_items_from_business_data(self, business_data, menu_item_cache):
-        print(f"[recommendation_engine]: __get_menu_items_from_business_data(business_data={business_data}) is not finished!")
-        return {}
+    def __get_menu_items_from_business_data(self, usda_api: src.usda_api.usda_nutrient_api, business_data, menu_item_cache):
+        menu_items: typing.Dict[str, src.meal_definitions.food_item]
+        for cuisine, businesses in business_data.items():
+            for business in businesses:
+                
+                business_name = business["name"]
+                
+                # cross reference cusine and business item to retrieve menu items
+                food_items: typing.List[str] = menu_item_cache[cuisine][business_name]
+                for food in food_items:
+                    # api call to retrieve nutrient data if we have not looked up that item already
+                    if menu_items.get(food, None) is None:
+                        menu_items[food] = usda_api.search_call_best_as_food_item(food)
+        
+        return menu_items
         
     """helper function that takes a dictionary of menu items (keyword, menu item data) and returns a dictionary of vectorized menu items"""
     def __vectorize_menu_items(self, menu_items_dict):
@@ -152,7 +166,7 @@ class recommendation_engine:
     NOTE: yelp_api should probably just be passed into constructor but whatever, it's an MVP
     NOTE: user_location should also probably be cached on recommendation engine, but it's an MVP
     """
-    def find_n_recommendations(self, n_recommendations, yelp_api: src.yelp_api.yelp_api, user_location, menu_item_cache):
+    def find_n_recommendations(self, n_recommendations, yelp_api: src.yelp_api.yelp_api, usda_api: src.usda_api.usda_nutrient_api, user_location, menu_item_cache):
         assert n_recommendations > 0, "must return at least 1 result!"
         
         # check that we have user location
@@ -161,16 +175,16 @@ class recommendation_engine:
         # try to use user preference (cuisines), otherwise use a predefined list
         query_terms: typing.List[str] = self.__user._food_preferences if self.__user._food_preferences else recommendation_engine.GENERIC_FOOD_PREFERENCE_LIST
         # iterate terms and get restaurant data from yelp (which includes food items)
-        business_data = { "businesses": [] }
+        business_data = { }
         for term in query_terms:
             # create one huge list of businesses
             query_data = { "term": term, "location": user_location }
             
-            print("find_n_recommendations() not actually doing yelp api call to save on credits!")
-            #business_data["businesses"] = business_data["businesses"] + yelp_api.search_for_businesses(query_data)["businesses"]
+            #print("find_n_recommendations() not actually doing yelp api call to save on credits!")
+            business_data[term] = business_data.get(term, []) + yelp_api.search_for_businesses(query_data)["businesses"]
         
         # get menu items from business data
-        menu_items = self.__get_menu_items_from_business_data(business_data=business_data, menu_item_cache=menu_item_cache)
+        menu_items = self.__get_menu_items_from_business_data(usda_api=usda_api, business_data=business_data, menu_item_cache=menu_item_cache)
         
         # create vectors of business data and user
         # NOTE: items_vectorized is a np matrix of vectorized items
