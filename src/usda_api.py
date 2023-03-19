@@ -84,7 +84,7 @@ class usda_nutrient_api:
         response = requests.get(url_with_key, params=payload)
         if not response:
             print("[usda_api]: SEARCH call failed!")
-            return
+            return None
         
         response_json = response.json()
         nutrients = {}
@@ -98,10 +98,19 @@ class usda_nutrient_api:
         return nutrients
     
     """helper function to search the USDA API for a food based on keyword, and return the best (currently first) result as a `food_item`"""
-    def search_call_best_as_food_item(self, food_item_name: str):
+    def search_call_best_as_food_item(self, food_item_name: str, can_fail: bool = False):
         
         nutrients = self.search_call(food_item_name)
-        calories = nutrients["calories"]
+        
+        # check for errors
+        if nutrients is None and not can_fail:
+            assert False, "usda_api returned null!"
+        elif nutrients is None and can_fail:
+            return None
+        
+        calories = nutrients.get("calories", 0)
+        if calories == 0:
+            print(f"usda search call could not locate calories in nutrient dict = {nutrients}")
              
         return meal_definitions.food_item(_food_name=food_item_name, _calories=calories, _nutrient_data=nutrients)
         

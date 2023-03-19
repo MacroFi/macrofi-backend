@@ -42,7 +42,7 @@ class macrofi_server():
         # user data in memory cache
         self.__in_memory_user_cache: typing.Dict[int, src.user.user_profile_data] = in_memory_user_cache
         # cache of active user recommendation engines
-        self.__active_user_recommendation_engines: typing.Dict[int, engine.recommendation_engine] = { uuid : engine.recommendation_engine(user) for uuid, user in self.__in_memory_user_cache.items() }
+        self.__active_user_recommendation_engines: typing.Dict[int, engine.recommendation_engine] = { uuid : engine.recommendation_engine(user, server=self) for uuid, user in self.__in_memory_user_cache.items() }
         # cache of user's last posted location, used in the recommendation engine and for yelp's nearby restaurants
         # TODO(Sean): read/write to file
         self.__user_location_data_cache: typing.Dict[int, src.user.user_location_data] = {1234: src.user.user_location_data(uuid=1234, location="irvine", longitude=None, latitude=None)}
@@ -178,7 +178,7 @@ class macrofi_server():
                 # union between cached data and newly created data
                 self.__business_menu_item_cache[cuisine_str] = self.__business_menu_item_cache.get(cuisine_str, {}) | business_dict
                 
-        print(self.__business_menu_item_cache)
+        # print(self.__business_menu_item_cache)
         print("[SERVER]: finished to deserialize menu item cache")
                     
     
@@ -203,7 +203,7 @@ class macrofi_server():
         
         if self.__active_user_recommendation_engines.get(uuid, None) is None:
             print(f"[SERVER] recommendation engine for user_id={uuid} does not exist, creating...")
-            self.__active_user_recommendation_engines[uuid] = engine.recommendation_engine(user=self.__get_user(uuid))
+            self.__active_user_recommendation_engines[uuid] = engine.recommendation_engine(user=self.__get_user(uuid), server=self)
         
         return self.__active_user_recommendation_engines[uuid]
     
@@ -514,15 +514,20 @@ class macrofi_server():
             location_payload = location_data.get_location_tuple()
         else:
             assert False, "failed to parse and create location payload for find_n_recommendations!"
-        
-        return self.__get_or_create_recommendation_engine(
+       
+        recommendations = self.__get_or_create_recommendation_engine(
             uuid=uuid
         ).find_n_recommendations(
             n_recommendations=n_recommendations, 
-            yelp_api=self.__yelp_api, 
+            yelp_api=self.__yelp_api,
+            usda_api=self.__usda_api,
             user_location=location_payload, 
             menu_item_cache=self.__business_menu_item_cache
         )
+        
+        print(f"[SERVER]: __flask_get_recommendations_for_user(uuid={uuid}, n_recommendations={n_recommendations}) returned {recommendations}")
+        
+        return jsonify(recommendations)
         
   
 """get, put, post api call for /v1/user/<uuid>"""

@@ -77,9 +77,9 @@ def main():
     #yelp.search_for_businesses(query_data={ "term":"delis", "location":"irvine" })
     
     # test recommendation engine
-    user1_recommendation_engine = recommendation_engine(user=user1)
-    print(f"[DEBUG] user_id='{user1._uuid}' calorie recommendation is {user1_recommendation_engine.calculate_calorie_need()}")
-    user1_recommendation_engine.kmeans_clustering_on_meals()
+    #user1_recommendation_engine = recommendation_engine(user=user1)
+   # print(f"[DEBUG] user_id='{user1._uuid}' calorie recommendation is {user1_recommendation_engine.calculate_calorie_need()}")
+    #user1_recommendation_engine.kmeans_clustering_on_meals()
     
     # create test flask server
     if RUN_SERVER:

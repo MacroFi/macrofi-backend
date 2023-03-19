@@ -106,10 +106,10 @@ class meal_item:
         
         # iterate each food item's nutrient dict, and update the combined one
         for food in self._food_items:
-            for nutrient, value in food._nutrient_data:
+            for nutrient, value in food._nutrient_data.items():
                 
                 # TODO(Sean): i think there is a more pythonic way to do this
-                if combined_nutrients.get(nutrient) is not None:
+                if combined_nutrients.get(nutrient, None) is not None:
                     combined_nutrients[nutrient] += value
                 else:
                     combined_nutrients[nutrient] = value

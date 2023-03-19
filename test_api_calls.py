@@ -27,6 +27,7 @@ if __name__ == "__main__":
     
     # test GET http://127.0.0.1:5000/v1/user/1234/recommendations
     try:
+        print("recommendations: ")
         response = requests.get("http://127.0.0.1:5000/v1/user/1234/recommendations")
     except:
         print("failed to get a response from http://127.0.0.1:5000/v1/user/1234/recommendations")
