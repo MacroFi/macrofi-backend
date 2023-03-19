@@ -20,6 +20,7 @@ CORS(flask_app)
 class macrofi_server():
     
     DEFAULT_USER_PROFILE_FILE_NAME = "user_profile_data_cache.json"
+    DEFAULT_MENU_ITEM_FILE_NAME = "menu_data_01.csv"
     
     """singleton new constructor"""
     def __new__(self):
@@ -51,6 +52,17 @@ class macrofi_server():
         self.__usda_api: usda_nutrient_api = usda_nutrient_api(headless=self.__headless)
         # thread which periodically saves the user profile cache
         self.__user_profile_serialize_thread: typing.Union[threading.Thread, None] = None
+        # cache of menu items from restaurant
+        """
+        schema:
+        {
+            cuisine: str : list[ { business_name: str : list[food_keyword: str] } ]
+        }
+        """
+        self.__business_menu_item_cache: typing.Dict[str, typing.List[typing.Dict[str, typing.List[str]]]] = {}
+        
+        # deserialize business menu item data
+        self.__deserialize_menu_data_from_file(filename=macrofi_server.DEFAULT_MENU_ITEM_FILE_NAME)
         
         # save to cache instantly if the user profile dictionary is pre-populated
         if self.__in_memory_user_cache:
@@ -136,6 +148,39 @@ class macrofi_server():
                 self.__in_memory_user_cache = deserialized_cache
         except OSError:
             print(f"[SERVER]: failed to find {save_file_name}.")
+            
+    """internal method to deserialize menu data and load into cache"""
+    def __deserialize_menu_data_from_file(self, filename: typing.Union[str, None] = None):
+        
+        if filename is None:
+            print(f"__deserialize_menu_data_from_file() did not specify a filename, defaulting to {macrofi_server.DEFAULT_MENU_ITEM_FILE_NAME}")
+            filename = macrofi_server.DEFAULT_MENU_ITEM_FILE_NAME
+        
+        print("[SERVER]: starting to deserialize menu item cache...")
+        with open(filename, "r") as f:
+            data = f.readlines()
+            
+            for line in data:
+                # strip spaces from beg or end of line and split on commas
+                line_data = line.strip().split(',')
+                # strip any spaces before or after data
+                line_data = [d.strip() for d in line_data]
+                
+                assert len(line_data) > 3, f"invalid line={line_data}"
+                
+                cuisine_str = line_data[0]
+                business_name = line_data[1]
+                # get food menu items
+                food_item_keywords = [line_data[i] for i in range(2, len(line_data))]
+                
+                business_dict = { business_name:food_item_keywords}
+                
+                # union between cached data and newly created data
+                self.__business_menu_item_cache[cuisine_str] = self.__business_menu_item_cache.get(cuisine_str, {}) | business_dict
+                
+        print(self.__business_menu_item_cache)
+        print("[SERVER]: finished to deserialize menu item cache")
+                    
     
     """internal method to get meal data from a user, potentially specifying an earliest date for recorded meals"""
     def __get_user_meal_data(self, uuid: int, earliest_date: typing.Union[datetime.datetime, None] = None):
@@ -470,7 +515,14 @@ class macrofi_server():
         else:
             assert False, "failed to parse and create location payload for find_n_recommendations!"
         
-        return self.__get_or_create_recommendation_engine(uuid=uuid).find_n_recommendations(n_recommendations=n_recommendations, yelp_api=self.__yelp_api, user_location=location_payload)
+        return self.__get_or_create_recommendation_engine(
+            uuid=uuid
+        ).find_n_recommendations(
+            n_recommendations=n_recommendations, 
+            yelp_api=self.__yelp_api, 
+            user_location=location_payload, 
+            menu_item_cache=self.__business_menu_item_cache
+        )
         
   
 """get, put, post api call for /v1/user/<uuid>"""

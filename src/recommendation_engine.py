@@ -137,8 +137,8 @@ class recommendation_engine:
         calories_for_meal: int = 0
         return np.array([])
 
-    """internal helper function to retrieve menu items based on reference business data"""
-    def __get_menu_items_from_business_data(self, business_data):
+    """internal helper function to retrieve menu items based on reference business data and menu item cache"""
+    def __get_menu_items_from_business_data(self, business_data, menu_item_cache):
         print(f"[recommendation_engine]: __get_menu_items_from_business_data(business_data={business_data}) is not finished!")
         return {}
         
@@ -152,7 +152,7 @@ class recommendation_engine:
     NOTE: yelp_api should probably just be passed into constructor but whatever, it's an MVP
     NOTE: user_location should also probably be cached on recommendation engine, but it's an MVP
     """
-    def find_n_recommendations(self, n_recommendations, yelp_api: src.yelp_api.yelp_api, user_location):
+    def find_n_recommendations(self, n_recommendations, yelp_api: src.yelp_api.yelp_api, user_location, menu_item_cache):
         assert n_recommendations > 0, "must return at least 1 result!"
         
         # check that we have user location
@@ -170,7 +170,7 @@ class recommendation_engine:
             #business_data["businesses"] = business_data["businesses"] + yelp_api.search_for_businesses(query_data)["businesses"]
         
         # get menu items from business data
-        menu_items = self.__get_menu_items_from_business_data(business_data=business_data)
+        menu_items = self.__get_menu_items_from_business_data(business_data=business_data, menu_item_cache=menu_item_cache)
         
         # create vectors of business data and user
         # NOTE: items_vectorized is a np matrix of vectorized items
