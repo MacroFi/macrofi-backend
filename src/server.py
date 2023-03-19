@@ -380,7 +380,6 @@ class macrofi_server():
     json should be in the form { "meal_name":str (optional) "food_items": list[str] (food item keywords), "time_eaten": datetime (format: %Y-%m-%d %H:%M:%S) (optional) }
     """
     def __flask_put_user_meal_data(self, uuid: str, meal_data_json):
-        print("fuck you?")
         uuid = self.__uuid_as_int(uuid=uuid)
         if uuid is None:
             print("[SERVER] __flask_put_user_meal_data uuid is None!")
@@ -426,6 +425,21 @@ class macrofi_server():
         self.__add_meal_to_user(uuid, new_meal)
             
         return flask.Response(status=200)
+    
+    """internal method to call into recommendation engine for user, and get personalized recommendations"""
+    def __flask_get_recommendations_for_user(self, uuid: int, n_recommendations: int = 10):
+        # format uuid
+        uuid = self.__uuid_as_int(uuid=uuid)
+        if uuid is None:
+            print("[SERVER] __flask_put_user_meal_data uuid is None!")
+            return flask.Response(status=404)
+        
+        # assert the user is valid
+        if not self.__is_valid_user(uuid):
+            print("[SERVER] __flask_put_user_meal_data uuid is not valid (not found in user cache)!")
+            return flask.Response(status=400)
+        
+        return self.__get_or_create_recommendation_engine(uuid=uuid).find_n_recommendations(n_recommendations=n_recommendations)
         
   
 """get, put, post api call for /v1/user/<uuid>"""
@@ -466,6 +480,11 @@ def get_user_calorie_consumption_today(uuid: int):
 def get_nearby_restaurants_for_user(uuid: int):
     term = request.args.get("term", default=None)
     return macrofi_server()._macrofi_server__flask_get_nearby_restaurants_for_user(uuid=uuid, term=term)
+
+"""get api call for /v1/user/<uuid>/recommendations"""
+@flask_app.get("/v1/user/<uuid>/recommendations")
+def get_recommendations_for_user(uuid: int):
+    return macrofi_server().__macrofi_server__flask_get_recommendations_for_user(uuid=uuid, n_recommendations=10)
 
 """put api call for /v1/user/<uuid>/location"""
 @flask_app.put("/v1/user/<uuid>/location")

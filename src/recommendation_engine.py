@@ -1,6 +1,7 @@
 import src.user as user
 import typing
 import time
+import src.yelp_api
 
 from sklearn.cluster import KMeans
 import numpy as np
@@ -8,10 +9,12 @@ import numpy as np
 """TODO document"""
 class recommendation_engine:
     
+    GENERIC_FOOD_PREFERENCE_LIST: typing.List[str] = ["american", "chinese", "thai", "indian", "japanese", "korean", "mexican", "italian"]
+    
     def __init__(self, user: user.user_profile_data):
         # store the reference user we will be providing recommendations for
         self.__user = user
-        
+    
     # TODO(Sean): k-clustering of time eaten of meals to recommend "timely" meals?
     def kmeans_clustering_on_meals(self, number_of_meals: int = 3):
         # NOTE(Sean) this is wip
@@ -64,3 +67,70 @@ class recommendation_engine:
         numerator = starting_point + weight + height 
         # TODO(Sean): add physical activity factor...
         return (numerator / (age_factor * self.__user._age)) * physical_activity_factor * 100
+    
+    """
+    internal helper function to compute cosine similarity between a user vector, and vector of menu items
+    returns a dictionary of { str, float } (food item keyword, similarity)
+    """
+    def __compute_cosine_similarities(self, user_vector, items_as_vector):
+        
+        similarities = {}
+        for name, item_vec in items_as_vector.items():
+            num = user_vector.dot(item_vec)
+            denom = np.linalg.norm(user_vector) * np.linalg.norm(item_vec)
+            similarities[name] = num / denom
+            
+        return similarities
+    
+    """helper function to return a user as a vector (used when computing cosine similarity)"""
+    def __vectorize_user(self, user):
+        # take the amount of calories they still need, and average based on how many meals they still need to eat
+        assert False, "not finished!"
+        calories_for_meal: int = 0
+        return np.array([])
+    
+    def __get_menu_items_from_business_data(self, business_data):
+        assert False, "not implemented!"
+        
+    """helper function that takes a dictionary of menu items (keyword, menu item data) and returns a dictionary of vectorized menu items"""
+    def __vectorize_menu_items(self, menu_items_dict):
+        assert False, "not implemented"
+
+    """
+    use cosine similarity to compute best results, and return top-n
+    NOTE: yelp_api should probably just be passed into constructor but whatever, it's an MVP
+    NOTE: user_location should also probably be cached on recommendation engine, but it's an MVP
+    """
+    def find_n_recommendations(self, n_recommendations, yelp_api: src.yelp_api.yelp_api, user_location):
+        assert n_recommendations > 0, "must return at least 1 result!"
+        
+        # check that we have user location
+        assert user_location is not None, "no user location?"
+        
+        # try to use user preference (cuisines), otherwise use a predefined list
+        query_terms: typing.List[str] = self.__user._food_preferences if self.__user._food_preferences else recommendation_engine.GENERIC_FOOD_PREFERENCE_LIST
+        # iterate terms and get restaurant data from yelp (which includes food items)
+        business_data = { "businesses": [] }
+        for term in query_terms:
+            # create one huge list of businesses
+            query_data = { "term": term, "location": user_location }
+            business_data["businesses"] = business_data["businesses"] + yelp_api.search_for_businesses(query_data)["businesses"]
+        
+        # get menu items from business data
+        menu_items = self.__get_menu_items_from_business_data(business_data=business_data)
+        
+        # create vectors of business data and user
+        items_vectorized = self.__vectorize_menu_items(menu_items_dict=menu_items)
+        user_vectorized = self.__vectorize_user(user=user)
+        
+        # compute cosine similarity
+        similarities: typing.Dict[str, float] = self.__compute_cosine_similarities(user_vector=user_vectorized, items_as_vector=items_vectorized)
+        
+        # sort by similarity
+        sorted_by_cosine_similarity = sorted()
+        
+        # get and return top-k
+        return sorted_by_cosine_similarity[:n_recommendations]
+        
+        
+        

@@ -40,7 +40,7 @@ class yelp_api:
                 f.write(self.__api_key)
     
     """internal method to get a formatted url for a specific api call"""
-    def __get_url_formatted(self, api_call_type: str) -> str:
+    def __get_url_formatted(self, api_call_type: str, **kwargs: typing.Dict[str, str]) -> str:
         # check for programmer error
         if api_call_type.lower() not in [call.lower() for call in self.__api_call_types]:
             assert False, f"{api_call_type} is not a valid option. valid_options=[{', '.join(call for call in self.__api_call_types)}]"
@@ -54,7 +54,13 @@ class yelp_api:
             return f"{yelp_api.YELP_API_URL}{yelp_api.YELP_API_BUSINESS_SEARCH_ENDPOINT}"
         # business details
         elif api_call_type.lower() == self.__api_call_types[1].lower():
-            return f"{yelp_api.YELP_API_URL}{yelp_api.YELP_API_BUSINESS_DETAILS_ENDPOINT}"
+            # generate url for REST call
+            url = f"{yelp_api.YELP_API_URL}{yelp_api.YELP_API_BUSINESS_DETAILS_ENDPOINT}"
+            # format 
+            if kwargs.get("business_id", None) is None:
+                assert False, f"__get_url_formatted(api_call_type={api_call_type}) requires business_id keyword arg"    
+        
+            return url.replace(yelp_api.BUSINESS_ID_TOKEN, kwargs["business_id"])
     
     """internal method to format the header authentication for yelp api calls"""
     def __get_auth_header(self) -> typing.Dict[str, str]:
@@ -83,7 +89,12 @@ class yelp_api:
             parsed_response["businesses"].append(parsed_business_info)
 
         return parsed_response
-        
+    
+    """internal method to parse the json response from a business details get call."""
+    def __business_details_parser(self, response: typing.Dict[str, str]) -> typing.Dict[str, str]:
+        # TODO: processing
+        return response
+    
     """
     wrapper for a yelp business search, which will return results based on keywords, category, location, price, etc.
     query_data accepts the following data:
@@ -113,9 +124,35 @@ class yelp_api:
                 assert False, "location data must be a string or tuple(int, int))!"
         
         print(f"[yelp_api]: making business search GET call url='{formatted_url}', header='{header}'")
-        response = requests.get(url=formatted_url, headers=header, params=payload)
+        try:
+            response = requests.get(url=formatted_url, headers=header, params=payload)
+        except:
+            print(f"[yelp_api]: search_for_businesses(query_data={query_data}) failed to receive a response!")
+        
         if response is None:
             print("[yelp_api]: business search GET call failed!")
-            return
+            return {}
+        
+        print(response.json())
         
         return self.__search_for_businesses_parser(response.json())
+    
+    """wrapper for a yelp business details query, which will return rich business data for the passed in business id"""
+    def get_rich_business_data_by_id(self, business_id: str):
+        
+        formatted_url: str = self.__get_url_formatted("business_details", business_id=business_id)
+        print(f"[yelp_api]: get_rich_business_data_by_id(business_id={business_id}) url='{formatted_url}'")
+        header: typing.Dict[str, str] = self.__get_auth_header()
+        
+        response = None
+        try:
+            response = requests.get(url=formatted_url, headers=header)
+        except:
+            print(f"[yelp_api]: get_rich_business_data_by_id(business_id={business_id}) failed to receive a response!")
+        
+        if response is None:
+            print("[yelp_api]: business details GET call failed!")
+            return {}
+        
+        return self.__business_details_parser(response.json())
+        
