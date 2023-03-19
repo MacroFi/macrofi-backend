@@ -454,7 +454,23 @@ class macrofi_server():
             print("[SERVER] __flask_put_user_meal_data uuid is not valid (not found in user cache)!")
             return flask.Response(status=400)
         
-        return self.__get_or_create_recommendation_engine(uuid=uuid).find_n_recommendations(n_recommendations=n_recommendations)
+        # try get cached location data
+        location_data: typing.Union[src.user.user_location_data, None] = self.__user_location_data_cache.get(uuid, None)
+        print(self.__user_location_data_cache)
+        if location_data is None:
+            print(f"[SERVER]: could not find location data for user_id={uuid} in __flask_get_recommendations_for_user(uuid={uuid}, n_recommendations={n_recommendations})")
+            return flask.Response(status=400)
+        
+        # create user location payload for recommendation engine
+        location_payload = None
+        if location_data.has_location_string():
+            location_payload = location_data.get_location_string()
+        elif location_data.has_location_tuple():
+            location_payload = location_data.get_location_tuple()
+        else:
+            assert False, "failed to parse and create location payload for find_n_recommendations!"
+        
+        return self.__get_or_create_recommendation_engine(uuid=uuid).find_n_recommendations(n_recommendations=n_recommendations, yelp_api=self.__yelp_api, user_location=location_payload)
         
   
 """get, put, post api call for /v1/user/<uuid>"""
@@ -505,7 +521,7 @@ def get_nearby_restaurants_for_user(uuid: int):
 """get api call for /v1/user/<uuid>/recommendations"""
 @flask_app.get("/v1/user/<uuid>/recommendations")
 def get_recommendations_for_user(uuid: int):
-    return macrofi_server().__macrofi_server__flask_get_recommendations_for_user(uuid=uuid, n_recommendations=10)
+    return macrofi_server()._macrofi_server__flask_get_recommendations_for_user(uuid=uuid, n_recommendations=10)
 
 """put api call for /v1/user/<uuid>/location"""
 @flask_app.put("/v1/user/<uuid>/location")

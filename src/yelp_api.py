@@ -121,7 +121,7 @@ class yelp_api:
                 payload["longitude"] = loc_data[0]
                 payload["latitude"] = loc_data[1]
             else:
-                assert False, "location data must be a string or tuple(int, int))!"
+                assert False, f"location data must be a string or tuple(int, int)), but is {type(loc_data)}:'{loc_data}' "
         
         print(f"[yelp_api]: making business search GET call url='{formatted_url}', header='{header}'")
         try:

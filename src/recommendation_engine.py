@@ -107,32 +107,42 @@ class recommendation_engine:
     """
     
     """
-    internal helper function to compute cosine similarity between a user vector, and vector of menu items
-    returns a dictionary of { str, float } (food item keyword, similarity)
+    internal helper function to compute cosine similarity between a user vector, and matrix of menu items vectors
     """
-    def __compute_cosine_similarities(self, user_vector, items_as_vector):
+    def __compute_cosine_similarities(self, user_vector, items_as_vector_matrix):
         
-        similarities = {}
-        for name, item_vec in items_as_vector.items():
-            num = user_vector.dot(item_vec)
-            denom = np.linalg.norm(user_vector) * np.linalg.norm(item_vec)
-            similarities[name] = num / denom
+        assert user_vector.shape[1] == items_as_vector_matrix.shape[0], "shapes are not correct!"
+        
+        # compute the dot product of the item matrix and user vector
+        # calculates a matrix which represents how closely the user vector and each menu item vector align
+        P = items_as_vector_matrix.dot(user_vector)
+        
+        # create intermediate matrix of magnitudes of each of the menu item vectors
+        z = np.array([[np.linalg.norm(items_as_vector_matrix[i]) for i in range(items_as_vector_matrix.shape[0])]])
+        
+        # compute a matrix of the products of the user vector and menu item magnitudes
+        # helps with returning normalized results
+        Q = z @ np.linalg.norm(user_vector)
             
-        return similarities
+        # normalize
+        return P / Q
     
     """helper function to return a user as a vector (used when computing cosine similarity)"""
     def __vectorize_user(self, user):
+        print(f"[recommendation_engine]: __vectorize_user(user={user}) is not finished!")
         # take the amount of calories they still need, and average based on how many meals they still need to eat
-        assert False, "not finished!"
         calories_for_meal: int = 0
         return np.array([])
-    
+
+    """internal helper function to retrieve menu items based on reference business data"""
     def __get_menu_items_from_business_data(self, business_data):
-        assert False, "not implemented!"
+        print(f"[recommendation_engine]: __get_menu_items_from_business_data(business_data={business_data}) is not finished!")
+        return {}
         
     """helper function that takes a dictionary of menu items (keyword, menu item data) and returns a dictionary of vectorized menu items"""
     def __vectorize_menu_items(self, menu_items_dict):
-        assert False, "not implemented"
+        print(f"[recommendation_engine]: __vectorize_menu_items(menu_items_dict={menu_items_dict}) is not finished!")
+        return np.array([])
 
     """
     use cosine similarity to compute best results, and return top-n
@@ -152,20 +162,24 @@ class recommendation_engine:
         for term in query_terms:
             # create one huge list of businesses
             query_data = { "term": term, "location": user_location }
-            business_data["businesses"] = business_data["businesses"] + yelp_api.search_for_businesses(query_data)["businesses"]
+            
+            print("find_n_recommendations() not actually doing yelp api call to save on credits!")
+            #business_data["businesses"] = business_data["businesses"] + yelp_api.search_for_businesses(query_data)["businesses"]
         
         # get menu items from business data
         menu_items = self.__get_menu_items_from_business_data(business_data=business_data)
         
         # create vectors of business data and user
+        # NOTE: items_vectorized is a np matrix of vectorized items
         items_vectorized = self.__vectorize_menu_items(menu_items_dict=menu_items)
         user_vectorized = self.__vectorize_user(user=user)
         
         # compute cosine similarity
-        similarities: typing.Dict[str, float] = self.__compute_cosine_similarities(user_vector=user_vectorized, items_as_vector=items_vectorized)
+        similarities: typing.Dict[str, float] = self.__compute_cosine_similarities(user_vector=user_vectorized, items_as_vector_matrix=items_vectorized)
         
-        # sort by similarity
-        sorted_by_cosine_similarity = sorted()
+        menu_item_keys_as_list = menu_items.keys()
+        # sort by cosine similarity
+        sorted_by_cosine_similarity = sorted(menu_items.items(), key=lambda x: similarities[menu_item_keys_as_list.index(x)])
         
         # get and return top-k
         return sorted_by_cosine_similarity[:n_recommendations]
