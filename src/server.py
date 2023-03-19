@@ -173,10 +173,13 @@ class macrofi_server():
                 # get food menu items
                 food_item_keywords = [line_data[i] for i in range(2, len(line_data))]
                 
-                business_dict = { business_name:food_item_keywords}
+                business_dict = { business_name:food_item_keywords }
                 
                 # union between cached data and newly created data
-                self.__business_menu_item_cache[cuisine_str] = self.__business_menu_item_cache.get(cuisine_str, {}) | business_dict
+                cached = self.__business_menu_item_cache.get(cuisine_str, {})
+                cached.update(business_dict)
+                
+                self.__business_menu_item_cache[cuisine_str] = cached
                 
         # print(self.__business_menu_item_cache)
         print("[SERVER]: finished to deserialize menu item cache")
