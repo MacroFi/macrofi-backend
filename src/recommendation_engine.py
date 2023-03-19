@@ -9,7 +9,7 @@ import numpy as np
 """TODO document"""
 class recommendation_engine:
     
-    GENERIC_FOOD_PREFERENCE_LIST: typing.List[str] = ["american", "chinese", "thai", "indian", "japanese", "korean", "mexican", "italian"]
+    GENERIC_FOOD_PREFERENCE_LIST: typing.List[str] = ["american", "chinese", "thai", "indian", "japanese", "korean", "mexican", "italian", "fast_food"]
     
     def __init__(self, user: user.user_profile_data):
         # store the reference user we will be providing recommendations for
@@ -115,13 +115,16 @@ class recommendation_engine:
         
         # compute the dot product of the item matrix and user vector
         # calculates a matrix which represents how closely the user vector and each menu item vector align
+        # (m x n) * (m x 1) = (n x 1) result
         P = items_as_vector_matrix.dot(user_vector)
         
         # create intermediate matrix of magnitudes of each of the menu item vectors
+        # (n x 1)
         z = np.array([[np.linalg.norm(items_as_vector_matrix[i]) for i in range(items_as_vector_matrix.shape[0])]])
         
         # compute a matrix of the products of the user vector and menu item magnitudes
         # helps with returning normalized results
+        # scalar * (n x 1) = (n x 1) result
         Q = z @ np.linalg.norm(user_vector)
             
         # normalize
