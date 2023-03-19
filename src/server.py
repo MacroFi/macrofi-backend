@@ -113,7 +113,7 @@ class macrofi_server():
         """open a file in write mode (will overwrite existing file), and dump the user profile cache as json"""
         with open(save_file_name, "w") as f:
             jsonified: typing.Dict[str, typing.Dict[str, str]] = { key:user.to_json() for key,user in self.__in_memory_user_cache.items() }
-            json.dump(jsonified, f)
+            json.dump(jsonified, f, indent=4)
         print(f"[SERVER] finished caching data.")
         
     """internal method to periodically save the user profile cache to a file"""
@@ -238,6 +238,21 @@ class macrofi_server():
         user_engine: engine.recommendation_engine = self.__get_or_create_recommendation_engine(uuid=uuid)
         
         return jsonify({ "calorie_need":user_engine.calculate_calorie_need() })
+    
+    def __flask_get_user_macronutrients(self, uuid: int):
+        uuid = self.__uuid_as_int(uuid=uuid)
+        if uuid is None:
+            return flask.Response(status=404)
+        
+        print(f"[SERVER]: received GET get_user_calorie_calculation(uuid={uuid})")
+        if not self.__is_valid_user(uuid=uuid):
+            print(f"[SERVER]: could not find user_id={uuid} in cache!")
+            return flask.Response(status=400)
+
+        user_engine: engine.recommendation_engine = self.__get_or_create_recommendation_engine(uuid=uuid)
+        
+        return jsonify({ "macronutrients":user_engine.calculate_macronutrients() })
+
     
     """internal method to get nearby restaurants from yelp api for a specific user"""
     def __flask_get_nearby_restaurants_for_user(self, uuid: int, term: str):
@@ -469,6 +484,12 @@ def get_user_meal_data_today(uuid: int):
 @flask_app.get("/v1/user/<uuid>/calorie/need")
 def get_user_calorie_calculation(uuid: int):
     return macrofi_server()._macrofi_server__flask_get_user_calorie_calculation(uuid=uuid)
+
+"""get api call for /v1/user/<uuid>/macros/need"""
+@flask_app.get("/v1/user/<uuid>/macros")
+def get_user_macros(uuid: int):
+    return macrofi_server()._macrofi_server__flask_get_user_macronutrients(uuid=uuid)
+
 
 """get api call for /v1/user/<uuid>/calorie/today"""
 @flask_app.get("/v1/user/<uuid>/calorie/today")

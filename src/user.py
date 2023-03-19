@@ -221,7 +221,7 @@ def try_create_user_profile_data(
     
     # TODO: add meals, personal goals, dietary restrictions
     
-    return user_profile_data(_uuid=uuid, _weight=weight, _height=height, _age=age, _meals=[], _sex=sex, _personal_goals=[], _dietary_restrictions=[])
+    return user_profile_data(_uuid=uuid, _weight=weight, _height=height, _age=age, _meals=[], _sex=sex, _personal_goal="", _dietary_restrictions=[], _food_preferences=[])
 
 """struct to help record updates for a user's location"""
 class user_location_data:
