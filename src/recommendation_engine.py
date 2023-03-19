@@ -88,7 +88,9 @@ class recommendation_engine:
     Carbs: 45-65% of Calories
     Protein: 10-35% of Calories
     Fat: 20-35% of Calories
-    """
+    Sugar:10% of Calories
+    RETURNS IN GRAMS NOW
+    #https://www.prospectmedical.com/resources/wellness-center/macronutrients-fats-carbs-protein
     """
     def calculate_macronutrients(self) -> list:
         # check for programmer error
@@ -97,16 +99,23 @@ class recommendation_engine:
         calories = self.calculate_calorie_need()
         # starting factors
         carbfactor: float = 0.55
-        proteinfactor: float = 0.20
+        proteinfactor: float = 0.25
         fatfactor: float = 0.30
+        sugarfactor: float = 0.10
+
+        if self.__user._personal_goal == user.user_goal_enum.WEIGHT_LOSS:
+            carbfactor: float = 0.20
+            proteinfactor: float = 0.45
+            fatfactor: float = 0.35
+            sugarfactor: float = 0.10
         
-        carbs = calories*carbfactor
-        protein = calories*proteinfactor
-        fat = calories*fatfactor        
+        carbs = calories*carbfactor/4 # 4 CALORIES PER GRAM
+        protein = calories*proteinfactor/4 # 4 CALORIES PER GRAM
+        fat = calories*fatfactor/9 # 9 CALORIES PER GRAM    
+        sugar = calories*sugarfactor/4 # 4 CALORIES PER GRAM    
         # compute
-        macros = [carbs, protein, fat]
+        macros = [carbs, protein, fat, sugar]
         return macros
-    """
     
     """
     internal helper function to compute cosine similarity between a user vector, and matrix of menu items vectors
