@@ -206,6 +206,8 @@ class recommendation_engine:
             [nutrient_need_dict["sugar"] * meal_average_factor]
         ]
         
+        assert len(features) == recommendation_engine.VECTOR_DIMENSION, "you probably forgot to change the vector dimension!"
+        
         return np.array(features)
 
     """internal helper function to retrieve menu items based on reference business data and menu item cache"""
@@ -241,12 +243,15 @@ class recommendation_engine:
             food_item._nutrient_data.get("fat", 0), 
             food_item._nutrient_data.get("sugar", 0)
         ]
+        
+        assert len(features) == recommendation_engine.VECTOR_DIMENSION, "you probably forgot to change the vector dimension!"
+        
         return np.array(features)
     
     """helper function that takes a dictionary of menu items (keyword, menu item data) and returns a dictionary of vectorized menu items"""
     def __vectorize_menu_items(self, menu_items_dict):
         
-        menu_items_matrix = np.array([[None]*recommendation_engine.VECTOR_DIMENSION for _ in range(len(menu_items_dict.keys()))])
+        menu_items_matrix = np.array([[0.0]*recommendation_engine.VECTOR_DIMENSION for _ in range(len(menu_items_dict.keys()))])
         for index, item in enumerate(menu_items_dict.values()):
             menu_items_matrix[index] = self.__food_item_to_vector(item)
         
