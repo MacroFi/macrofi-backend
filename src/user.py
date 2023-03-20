@@ -28,10 +28,15 @@ class user_dietary_restriction_enum:
     
 class user_preferences_enum:
     AMERICAN: str = "american"
-    MEXICAN: str = "mexican"
     CHINESE: str = "chinese"
-    INDIAN: str = "indian"
     THAI: str = "thai"
+    INDIAN: str = "indian"
+    JAPANESE:str ="japanese"
+    KOREAN: str = "korean"
+    MEXICAN: str = "mexican"
+    ITALIAN: str = "italian"
+    FASTFOOD: str = "fast_food"
+
 
 """create a dietary restriction object (just a tuple with the type and a general "payload")"""
 def create_dietary_restriction(type: user_dietary_restriction_enum, payload: str) -> typing.Tuple[user_dietary_restriction_enum, str]:
