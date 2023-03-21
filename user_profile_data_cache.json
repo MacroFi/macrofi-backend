@@ -106,5 +106,19 @@
         "food_preferences": [],
         "dietary_restrictions": [],
         "personal_goals": []
+    },
+    "722": {
+        "uuid": "722",
+        "weight": "180.0",
+        "height": "72",
+        "age": "25",
+        "meals": [],
+        "sex": "male",
+        "food_preferences": [
+            "american",
+            "fast_food"
+        ],
+        "dietary_restrictions": [],
+        "personal_goals": "bulk"
     }
 }
