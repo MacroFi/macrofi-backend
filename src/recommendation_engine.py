@@ -274,19 +274,13 @@ class recommendation_engine:
         # iterate terms and get restaurant data from yelp (which includes food items)
         business_data = { }
         
-        debug_count: int = 0
         for term in query_terms:
-            if debug_count >= 1:
-                print("[recommendation_engine]: only doing 1 yelp api search call to save credits!")
-                break
             
             # create one huge list of businesses
             query_data = { "term": term, "location": user_location }
             
             #print("find_n_recommendations() not actually doing yelp api call to save on credits!")
             business_data[term] = business_data.get(term, []) + yelp_api.search_for_businesses(query_data)["businesses"]
-            
-            debug_count += 1
         
         # get menu items from business data
         menu_items = self.__get_menu_items_from_business_data(usda_api=usda_api, business_data=business_data, menu_item_cache=menu_item_cache)
