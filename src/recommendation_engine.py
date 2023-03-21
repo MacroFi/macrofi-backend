@@ -85,9 +85,10 @@ class recommendation_engine:
         # compute
         weight = (weight_factor * self.__user.get_body_weight_in_kg())
         height = (height_factor * self.__user.get_height_in_cm())
+        
         numerator = starting_point + weight + height 
-        # TODO(Sean): add physical activity factor...
-        return (numerator / (age_factor * self.__user._age)) * physical_activity_factor * 100
+        print(numerator)
+        return ((numerator - (age_factor * self.__user._age)) * physical_activity_factor)
     
     """
     Carbs: 45-65% of Calories
