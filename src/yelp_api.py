@@ -76,7 +76,11 @@ class yelp_api:
 
         parsed_response = {"businesses" : []}
         
+        count: int = 0
         for business in response.get("businesses", ""):
+            if count >= 10:
+                break
+            
             parsed_business_info: typing.Dict[str, str] = {}
             
             parsed_business_info["name"]       = business.get("name", "")
@@ -87,6 +91,8 @@ class yelp_api:
             parsed_business_info["rating"]     = str(business.get("rating", ""))
 
             parsed_response["businesses"].append(parsed_business_info)
+            
+            count += 1
 
         return parsed_response
     

@@ -227,7 +227,7 @@ class recommendation_engine:
                     # api call to retrieve nutrient data if we have not looked up that item already
                     if menu_items.get(food, None) is None:
                         item_data: typing.Union[src.meal_definitions.food_item, None] = usda_api.search_call_best_as_food_item(food, can_fail=True)
-                        if item_data is not None:
+                        if item_data is not None and item_data._calories != 0:
                             menu_items[food] = item_data
                         else:
                             print(f"[recommendation_engine]: usda_api.search_call_best_as_food_item(food={food}) returned null, something went wrong with call")
@@ -277,11 +277,9 @@ class recommendation_engine:
         debug_count: int = 0
         for term in query_terms:
             
-            if debug_count >= 1:
-                break
-            
             # create one huge list of businesses
             query_data = { "term": term, "location": user_location }
+            print(f"querying yelp with term {term}")
             
             #print("find_n_recommendations() not actually doing yelp api call to save on credits!")
             business_data[term] = business_data.get(term, []) + yelp_api.search_for_businesses(query_data)["businesses"]
